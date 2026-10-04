@@ -39,19 +39,35 @@ jobs:
       - name: Prepare Signing Keystore
         run: |
           mkdir -p ~/.android
-          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "::error::Missing KEYSTORE_BASE64 secret in repository settings. Set KEYSTORE_BASE64, KEY_ALIAS, STORE_PASSWORD, and KEY_PASSWORD in GitHub Secrets."
-            exit 1
+          KEYSTORE_SECRET="${{ secrets.KEYSTORE_BASE64 }}"
+          if [ -n "$KEYSTORE_SECRET" ]; then
+            echo "Using custom keystore from GitHub Secrets..."
+            echo "$KEYSTORE_SECRET" | base64 --decode > release.keystore
+            ALIAS="${{ secrets.KEY_ALIAS }}"
+            [ -z "$ALIAS" ] && ALIAS="androiddebugkey"
+            SPASS="${{ secrets.STORE_PASSWORD }}"
+            [ -z "$SPASS" ] && SPASS="android"
+            KPASS="${{ secrets.KEY_PASSWORD }}"
+            [ -z "$KPASS" ] && KPASS="android"
+            echo "KEY_ALIAS=$ALIAS" >> $GITHUB_ENV
+            echo "STORE_PASS=$SPASS" >> $GITHUB_ENV
+            echo "KEY_PASS=$KPASS" >> $GITHUB_ENV
+          elif [ -f "debug.keystore.base64" ]; then
+            echo "::notice::KEYSTORE_BASE64 secret not found in repository. Using bundled keystore for automated signing."
+            base64 --decode debug.keystore.base64 > release.keystore
+            echo "KEY_ALIAS=androiddebugkey" >> $GITHUB_ENV
+            echo "STORE_PASS=android" >> $GITHUB_ENV
+            echo "KEY_PASS=android" >> $GITHUB_ENV
+          else
+            echo "::notice::KEYSTORE_BASE64 secret not found. Generating self-signed keystore for signing."
+            keytool -genkeypair -v -keystore release.keystore -alias mluonakey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Mluona, OU=TV, O=Mluona, L=City, S=State, C=US"
+            echo "KEY_ALIAS=mluonakey" >> $GITHUB_ENV
+            echo "STORE_PASS=android" >> $GITHUB_ENV
+            echo "KEY_PASS=android" >> $GITHUB_ENV
           fi
-          echo "Using custom keystore from secrets..."
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
-          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "STORE_PASS=${{ secrets.STORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "KEY_PASS=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
           echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
-
           cp release.keystore debug.keystore
-          cp debug.keystore ~/.android/debug.keystore
+          cp release.keystore ~/.android/debug.keystore
 
       # Build optimized Release APK
       - name: Assemble Release APK
@@ -70,15 +86,17 @@ jobs:
       # Sign with apksigner (v1, v2, v3 schemes) so Android TV and mobile install smoothly
       - name: Sign APK with apksigner
         run: |
-          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs -name "*.apk" | grep -v "unaligned" | head -n 1)
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
+            echo "::error::No APK file found in build outputs to sign."
+            exit 1
           fi
           echo "Found APK to sign at: $APK_PATH"
           
           APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -V | tail -n 1)
           echo "Using apksigner at: $APKSIGNER"
           
+          mkdir -p build-signed
           $APKSIGNER sign --ks release.keystore \
             --ks-key-alias "$KEY_ALIAS" \
             --ks-pass "pass:$STORE_PASS" \
@@ -86,15 +104,15 @@ jobs:
             --v1-signing-enabled true \
             --v2-signing-enabled true \
             --v3-signing-enabled true \
-            --out app/build/outputs/apk/release/mluona-iptv-release.apk \
+            --out build-signed/mluona-iptv-release.apk \
             "$APK_PATH"
           
-          $APKSIGNER verify --verbose app/build/outputs/apk/release/mluona-iptv-release.apk
+          $APKSIGNER verify --verbose build-signed/mluona-iptv-release.apk
 
       - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: mluona-iptv-release-apk
-          path: app/build/outputs/apk/release/mluona-iptv-release.apk
+          path: build-signed/mluona-iptv-release.apk
           if-no-files-found: error
           retention-days: 14
