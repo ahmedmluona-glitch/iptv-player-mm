@@ -103,8 +103,8 @@ class SubscriptionManager(
     }
 
     fun isPlaybackAllowed(): Boolean {
-        val info = _subscriptionState.value ?: return false
-        return info.isPlaybackAllowed(serverTimeOffset)
+        // Subscriptions disabled/hidden for now
+        return true
     }
 
     fun setAuthToken(token: String?, email: String? = null) {

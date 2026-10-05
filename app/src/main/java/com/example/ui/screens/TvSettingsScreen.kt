@@ -157,141 +157,144 @@ fun TvSettingsScreen(
                 }
             }
 
-            // 0. Subscription & Cloud Sync Card (نظام الاشتراك والمزامنة السحابية)
-            SettingsSectionCard(
-                icon = Icons.Default.CardMembership,
-                title = "نظام الاشتراك والحساب السحابي",
-                testTag = "section_subscription"
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val statusText = when (subInfo?.status) {
-                        SubscriptionStatus.ACTIVE -> "نشط (Active)"
-                        SubscriptionStatus.TRIAL -> "تجربة مجانية 7 أيام (Trial)"
-                        SubscriptionStatus.SUSPENDED -> "معلق (Suspended)"
-                        SubscriptionStatus.EXPIRED -> "منتهي (Expired)"
-                        else -> "غير محدد"
-                    }
-                    val statusColor = when (subInfo?.status) {
-                        SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL -> TvAccentEmerald
-                        SubscriptionStatus.SUSPENDED -> Color(0xFFFF4D4D)
-                        else -> TvAccentGold
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF10161D))
-                            .padding(14.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                text = "الخطة: ${subInfo?.planName ?: "باقة ملوونة"}",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "تاريخ الانتهاء: ${subInfo?.expiresAtFormatted ?: "غير محدد"}",
-                                color = TvTextMuted,
-                                fontSize = 12.sp
-                            )
+            // 0. Subscription & Cloud Sync Card (نظام الاشتراك والمزامنة السحابية - مخفي حالياً)
+            val showSubscriptionSection = false
+            if (showSubscriptionSection) {
+                SettingsSectionCard(
+                    icon = Icons.Default.CardMembership,
+                    title = "نظام الاشتراك والحساب السحابي",
+                    testTag = "section_subscription"
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        val statusText = when (subInfo?.status) {
+                            SubscriptionStatus.ACTIVE -> "نشط (Active)"
+                            SubscriptionStatus.TRIAL -> "تجربة مجانية 7 أيام (Trial)"
+                            SubscriptionStatus.SUSPENDED -> "معلق (Suspended)"
+                            SubscriptionStatus.EXPIRED -> "منتهي (Expired)"
+                            else -> "غير محدد"
+                        }
+                        val statusColor = when (subInfo?.status) {
+                            SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL -> TvAccentEmerald
+                            SubscriptionStatus.SUSPENDED -> Color(0xFFFF4D4D)
+                            else -> TvAccentGold
                         }
 
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(statusColor.copy(alpha = 0.15f))
-                                .border(1.dp, statusColor, RoundedCornerShape(8.dp))
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF10161D))
+                                .padding(14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = statusText,
-                                color = statusColor,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    text = "الخطة: ${subInfo?.planName ?: "باقة ملوونة"}",
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "تاريخ الانتهاء: ${subInfo?.expiresAtFormatted ?: "غير محدد"}",
+                                    color = TvTextMuted,
+                                    fontSize = 12.sp
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(statusColor.copy(alpha = 0.15f))
+                                    .border(1.dp, statusColor, RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = statusText,
+                                    color = statusColor,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
-                    }
 
-                    // Activation Code input
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = activationCodeInput,
-                            onValueChange = { activationCodeInput = it },
-                            placeholder = { Text("أدخل كود التفعيل (POST /v1/redeem)", color = TvTextMuted, fontSize = 13.sp) },
-                            singleLine = true,
-                            modifier = Modifier.weight(1f),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = TvAccentEmerald,
-                                unfocusedBorderColor = TvBorder,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                        // Activation Code input
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = activationCodeInput,
+                                onValueChange = { activationCodeInput = it },
+                                placeholder = { Text("أدخل كود التفعيل (POST /v1/redeem)", color = TvTextMuted, fontSize = 13.sp) },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = TvAccentEmerald,
+                                    unfocusedBorderColor = TvBorder,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White
+                                )
                             )
-                        )
 
-                        SettingOptionPill(
-                            label = "تفعيل الكود",
-                            isSelected = false,
-                            testTag = "btn_redeem_settings",
-                            onClick = {
-                                if (activationCodeInput.isNotBlank()) {
-                                    coroutineScope.launch {
-                                        val res = viewModel.subscriptionManager.redeemCode(activationCodeInput)
-                                        redeemFeedback = res.message
-                                        if (res.success) {
-                                            viewModel.refreshSubscription()
-                                            activationCodeInput = ""
+                            SettingOptionPill(
+                                label = "تفعيل الكود",
+                                isSelected = false,
+                                testTag = "btn_redeem_settings",
+                                onClick = {
+                                    if (activationCodeInput.isNotBlank()) {
+                                        coroutineScope.launch {
+                                            val res = viewModel.subscriptionManager.redeemCode(activationCodeInput)
+                                            redeemFeedback = res.message
+                                            if (res.success) {
+                                                viewModel.refreshSubscription()
+                                                activationCodeInput = ""
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        )
-                    }
+                            )
+                        }
 
-                    if (redeemFeedback != null) {
-                        Text(
-                            text = redeemFeedback!!,
-                            color = TvAccentEmerald,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                        if (redeemFeedback != null) {
+                            Text(
+                                text = redeemFeedback!!,
+                                color = TvAccentEmerald,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
 
-                    // Server Playlists Sync button
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SettingOptionPill(
-                            label = if (isSyncingPlaylists) "جارٍ المزامنة..." else "مزامنة القوائم من السيرفر (GET /v1/playlists)",
-                            isSelected = false,
-                            modifier = Modifier.weight(1.5f),
-                            testTag = "btn_sync_playlists",
-                            onClick = {
-                                isSyncingPlaylists = true
-                                viewModel.syncServerPlaylists {
-                                    isSyncingPlaylists = false
+                        // Server Playlists Sync button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            SettingOptionPill(
+                                label = if (isSyncingPlaylists) "جارٍ المزامنة..." else "مزامنة القوائم من السيرفر (GET /v1/playlists)",
+                                isSelected = false,
+                                modifier = Modifier.weight(1.5f),
+                                testTag = "btn_sync_playlists",
+                                onClick = {
+                                    isSyncingPlaylists = true
+                                    viewModel.syncServerPlaylists {
+                                        isSyncingPlaylists = false
+                                    }
                                 }
-                            }
-                        )
+                            )
 
-                        SettingOptionPill(
-                            label = "خروج / تبديل الكود",
-                            isSelected = false,
-                            modifier = Modifier.weight(1f),
-                            testTag = "btn_logout_settings",
-                            onClick = {
-                                viewModel.subscriptionManager.logout()
-                                onBack()
-                            }
-                        )
+                            SettingOptionPill(
+                                label = "خروج / تبديل الكود",
+                                isSelected = false,
+                                modifier = Modifier.weight(1f),
+                                testTag = "btn_logout_settings",
+                                onClick = {
+                                    viewModel.subscriptionManager.logout()
+                                    onBack()
+                                }
+                            )
+                        }
                     }
                 }
             }

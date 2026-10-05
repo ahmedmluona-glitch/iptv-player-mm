@@ -99,45 +99,25 @@ fun MluonaTvApp(
       TvScreen.SPLASH -> {
         SplashScreen(
           onSplashComplete = {
-            val token = viewModel.subscriptionManager.authToken.value
-            if (token.isNullOrBlank()) {
-              currentScreen = TvScreen.DEVICE_CODE_LOGIN
-            } else if (!viewModel.isPlaybackAllowed()) {
-              currentScreen = TvScreen.SUBSCRIPTION_GATE
-            } else {
+            val active = viewModel.activeAccount.value
+            val savedAccounts = viewModel.savedAccounts.value
+            if (active != null || savedAccounts.isNotEmpty()) {
               currentScreen = TvScreen.DASHBOARD
+            } else {
+              currentScreen = TvScreen.PORTAL
             }
           }
         )
       }
       TvScreen.DEVICE_CODE_LOGIN -> {
-        DeviceCodeLoginScreen(
-          viewModel = viewModel,
-          onLoginSuccess = {
-            if (viewModel.isPlaybackAllowed()) {
-              currentScreen = TvScreen.DASHBOARD
-            } else {
-              currentScreen = TvScreen.SUBSCRIPTION_GATE
-            }
-          },
-          onNavigateToManualXtream = {
-            currentScreen = TvScreen.XTREAM_LOGIN
-          },
-          onNavigateToManualM3u = {
-            currentScreen = TvScreen.M3U_LOAD
-          }
-        )
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+          currentScreen = TvScreen.PORTAL
+        }
       }
       TvScreen.SUBSCRIPTION_GATE -> {
-        SubscriptionGateScreen(
-          viewModel = viewModel,
-          onSubscriptionActive = {
-            currentScreen = TvScreen.DASHBOARD
-          },
-          onNavigateToLogin = {
-            currentScreen = TvScreen.DEVICE_CODE_LOGIN
-          }
-        )
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+          currentScreen = TvScreen.DASHBOARD
+        }
       }
       TvScreen.PORTAL -> {
         TvPortalScreen(
@@ -166,7 +146,7 @@ fun MluonaTvApp(
             currentScreen = TvScreen.DASHBOARD
           },
           onBack = {
-            currentScreen = if (viewModel.activeAccount.value != null) TvScreen.PORTAL else TvScreen.DEVICE_CODE_LOGIN
+            currentScreen = TvScreen.PORTAL
           }
         )
       }
@@ -177,7 +157,7 @@ fun MluonaTvApp(
             currentScreen = TvScreen.DASHBOARD
           },
           onBack = {
-            currentScreen = if (viewModel.activeAccount.value != null) TvScreen.PORTAL else TvScreen.DEVICE_CODE_LOGIN
+            currentScreen = TvScreen.PORTAL
           }
         )
       }
@@ -188,7 +168,7 @@ fun MluonaTvApp(
             currentScreen = TvScreen.DASHBOARD
           },
           onAddNew = {
-            currentScreen = TvScreen.DEVICE_CODE_LOGIN
+            currentScreen = TvScreen.PORTAL
           },
           onBack = {
             currentScreen = TvScreen.DASHBOARD
@@ -235,10 +215,6 @@ fun MluonaTvApp(
         LiveTvScreen(
           viewModel = viewModel,
           onPlayChannel = { channel ->
-            if (!viewModel.isPlaybackAllowed()) {
-              currentScreen = TvScreen.SUBSCRIPTION_GATE
-              return@LiveTvScreen
-            }
             val streamUrl = viewModel.getLiveStreamUrl(channel)
             if (!streamUrl.isNullOrBlank()) {
               viewModel.recordChannelPlayed(channel)
@@ -276,10 +252,6 @@ fun MluonaTvApp(
             movie = movie,
             viewModel = viewModel,
             onPlayMovie = { vodDetail ->
-              if (!viewModel.isPlaybackAllowed()) {
-                currentScreen = TvScreen.SUBSCRIPTION_GATE
-                return@MovieDetailScreen
-              }
               val streamUrl = viewModel.getVodStreamUrl(movie) ?: viewModel.getVodStreamUrlFromId(vodDetail.streamId, vodDetail.containerExtension)
               if (!streamUrl.isNullOrBlank()) {
                 viewModel.markMovieWatched(movie)
@@ -322,10 +294,6 @@ fun MluonaTvApp(
             seriesItem = series,
             viewModel = viewModel,
             onPlayEpisode = { episode, seriesTitle ->
-              if (!viewModel.isPlaybackAllowed()) {
-                currentScreen = TvScreen.SUBSCRIPTION_GATE
-                return@SeriesDetailScreen
-              }
               val streamUrl = viewModel.getEpisodeStreamUrl(episode.id, episode.containerExtension)
               if (!streamUrl.isNullOrBlank()) {
                 viewModel.markSeriesWatched(series)
