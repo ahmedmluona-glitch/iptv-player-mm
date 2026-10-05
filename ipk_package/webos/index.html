@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mluona IPTV - Smart TV</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- Bundled Local Vendors (Zero External Network Dependencies) -->
   <script src="js/vendor/hls.min.js"></script>
   <script src="js/vendor/mpegts.js"></script>
 </head>
@@ -13,390 +12,523 @@
   <!-- Ambient TV Glow -->
   <div class="tv-ambient-glow"></div>
 
-  <!-- Number Jump OSD (When pressing remote numeric keys) -->
-  <div id="number-jump-osd" class="number-jump-osd hidden">
-    <span class="jump-label">انتقال إلى القناة:</span>
-    <span id="jump-digits" class="jump-digits">--</span>
+  <!-- Number Jump OSD (e.g. CH: 12 - ) -->
+  <div id="number-jump-osd" class="number-jump-box hidden">
+    <span class="jump-prefix">CH:</span>
+    <span id="jump-digits" class="jump-digits">1</span>
+    <span class="jump-cursor">-</span>
   </div>
 
-  <!-- Offline / Reconnection Banner -->
-  <div id="network-offline-banner" class="network-banner hidden">
-    <span>⚠️ انقطع الاتصال بالإنترنت! جارٍ مراقبة الشبكة لإعادة الاتصال التلقائي...</span>
-  </div>
-
-  <!-- Screen 1: Portal / Login / Account Switcher -->
-  <div id="screen-portal" class="screen active">
-    <div class="portal-modal-container">
-      <div class="brand-header">
-        <div class="brand-badge-icon">📺</div>
-        <div class="brand-titles">
-          <span class="neon-brand">MLUONA</span>
-          <span class="white-brand">IPTV</span>
-        </div>
+  <!-- =========================================================================
+       SCREEN 1: SPLASH SCREEN (Exact Replica of SplashScreen.kt)
+       ========================================================================= -->
+  <div id="screen-splash" class="screen active">
+    <div class="splash-center-box">
+      <div class="splash-icon-card">
+        <img src="icon.png" alt="Mluona IPTV" class="splash-logo-img">
       </div>
-      <p class="portal-tagline" id="txt-portal-tagline">بوابة التلفزيون الذكي - اختر طريقة الاتصال أو حدد حسابك</p>
-
-      <!-- Saved Accounts Carousel (if any exist) -->
-      <div id="saved-accounts-section" class="saved-accounts-section hidden">
-        <h4 class="section-mini-title">الحسابات المحفوظة</h4>
-        <div id="saved-accounts-list" class="saved-accounts-row"></div>
+      <div class="splash-titles">
+        <h1 class="splash-brand-neon">MLUONA PLAYER</h1>
+        <p class="splash-edition">TV EDITION • SMART TV</p>
       </div>
-
-      <!-- Connection Type Tabs -->
-      <div class="portal-tabs">
-        <button id="tab-xtream" class="focusable tab-btn active" data-action="portal-tab" data-tab="xtream">
-          <span class="tab-emoji">⚡</span>
-          <span>Xtream Codes API</span>
-        </button>
-        <button id="tab-m3u" class="focusable tab-btn" data-action="portal-tab" data-tab="m3u">
-          <span class="tab-emoji">📋</span>
-          <span>قائمة M3U Playlist</span>
-        </button>
-      </div>
-
-      <!-- Xtream Form -->
-      <div id="form-xtream" class="tab-form active">
-        <div class="input-block">
-          <label>اسم الحساب (اختياري)</label>
-          <input type="text" id="xtream-label" class="focusable" placeholder="مثال: سيرفر البيت" value="">
-        </div>
-        <div class="input-block">
-          <label>رابط السيرفر (Server Host URL)</label>
-          <input type="text" id="xtream-host" class="focusable ltr-input" placeholder="http://iptv.server.com:8080" value="">
-        </div>
-        <div class="input-row">
-          <div class="input-block flex-1">
-            <label>اسم المستخدم (Username)</label>
-            <input type="text" id="xtream-user" class="focusable ltr-input" placeholder="Username" value="">
-          </div>
-          <div class="input-block flex-1">
-            <label>كلمة المرور (Password)</label>
-            <div class="password-wrapper">
-              <input type="password" id="xtream-pass" class="focusable ltr-input" placeholder="Password" value="">
-              <button class="toggle-pass-btn focusable" data-action="toggle-pass" type="button">👁️</button>
-            </div>
-          </div>
-        </div>
-        <button id="btn-login-xtream" class="btn-main-action focusable" data-action="login-xtream">
-          <span>تسجيل الدخول والاتصال</span>
-        </button>
-      </div>
-
-      <!-- M3U Form -->
-      <div id="form-m3u" class="tab-form">
-        <div class="input-block">
-          <label>اسم القائمة (اختياري)</label>
-          <input type="text" id="m3u-label" class="focusable" placeholder="مثال: قائمة الرياضة" value="">
-        </div>
-        <div class="input-block">
-          <label>رابط قائمة التشغيل M3U (M3U / M3U8 URL)</label>
-          <input type="text" id="m3u-url" class="focusable ltr-input" placeholder="http://example.com/playlist.m3u" value="">
-        </div>
-        <button id="btn-login-m3u" class="btn-main-action focusable" data-action="login-m3u">
-          <span>تحميل قائمة التشغيل</span>
-        </button>
-      </div>
-
-      <div id="portal-status" class="status-alert"></div>
     </div>
   </div>
 
-  <!-- Screen 2: Main Dashboard (Full HD 1080p Grid) -->
-  <div id="screen-dashboard" class="screen">
-    <!-- Top Navigation Header -->
-    <header class="app-header">
-      <div class="header-brand">
-        <span class="neon-brand">MLUONA</span>
-        <span class="white-brand">IPTV</span>
+  <!-- =========================================================================
+       SCREEN 2: PORTAL SCREEN (Exact Replica of TvPortalScreen.kt)
+       ========================================================================= -->
+  <div id="screen-portal" class="screen">
+    <button class="portal-top-back-btn focusable" data-action="portal-go-dashboard">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Dashboard</span>
+    </button>
+
+    <div class="portal-modal-card">
+      <div class="portal-brand-header">
+        <div class="portal-logo-badge">
+          <img src="icon.png" alt="Mluona" class="portal-logo-mini">
+        </div>
+        <h2>MLUONA IPTV</h2>
+        <p>بوابة الاتصال - اختر نوع السيرفر لتشغيل القنوات</p>
       </div>
 
-      <nav class="header-nav">
-        <button class="nav-tab focusable active" data-action="switch-nav" data-target="live">
-          <span class="nav-icon">🔴</span>
-          <span>بث مباشر</span>
+      <div class="portal-two-options">
+        <!-- Option 1: Xtream Codes API -->
+        <button class="portal-option-card focusable" data-action="open-xtream-modal">
+          <div class="option-icon-circle">
+            <svg class="svg-icon-large" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          </div>
+          <h3>Xtream Codes API</h3>
+          <p>الاتصال المباشر عبر السيرفر واسم المستخدم وكلمة المرور</p>
+          <span class="option-tag">مستحسن للـ IPTV</span>
         </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="movies">
-          <span class="nav-icon">🎬</span>
-          <span>أفلام</span>
-        </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="series">
-          <span class="nav-icon">📺</span>
-          <span>مسلسلات</span>
-        </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="favorites">
-          <span class="nav-icon">⭐</span>
-          <span>المفضلة</span>
-        </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="history">
-          <span class="nav-icon">🕒</span>
-          <span>السجل</span>
-        </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="accounts">
-          <span class="nav-icon">👥</span>
-          <span>الحسابات</span>
-        </button>
-        <button class="nav-tab focusable" data-action="switch-nav" data-target="settings">
-          <span class="nav-icon">⚙️</span>
-          <span>الإعدادات</span>
-        </button>
-      </nav>
 
-      <div class="header-tools">
-        <div class="search-box">
-          <input type="text" id="global-search-input" class="focusable" placeholder="🔍 بحث عن قناة أو فيلم...">
+        <!-- Option 2: M3U Playlist -->
+        <button class="portal-option-card focusable" data-action="open-m3u-modal">
+          <div class="option-icon-circle">
+            <svg class="svg-icon-large" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </div>
+          <h3>Load M3U Playlist</h3>
+          <p>تحميل قائمة تشغيل عبر رابط M3U / M3U8 مباشر</p>
+          <span class="option-tag">روابط وباقات M3U</span>
+        </button>
+      </div>
+
+      <div id="portal-global-status" class="status-notice"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 3: DASHBOARD (Exact 3-Column Replica of TvDashboardScreen.kt)
+       ========================================================================= -->
+  <div id="screen-dashboard" class="screen">
+    <!-- Top Header Bar -->
+    <header class="dash-top-bar">
+      <!-- Left: Logo & Live Clock -->
+      <div class="dash-header-left">
+        <div class="dash-logo-block">
+          <div class="dash-logo-icon">
+            <svg class="svg-icon-neon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
+          </div>
+          <div class="dash-logo-text">
+            <span class="neon-txt">MLUONA</span>
+            <span class="white-txt">PLAYER</span>
+          </div>
+          <span class="dash-version-badge">v1.0.0</span>
         </div>
-        <div class="live-clock" id="live-clock">00:00</div>
+        <div class="dash-clock-divider">|</div>
+        <div class="dash-datetime-block">
+          <span id="dash-live-date">-- --- 2026</span>
+          <span class="dash-clock-dot">•</span>
+          <span id="dash-live-time" class="dash-neon-clock">00:00:00</span>
+        </div>
+      </div>
+
+      <!-- Right: 4 Action Buttons (+ Add | ? | Settings | Profile) -->
+      <div class="dash-header-right">
+        <button class="top-pill-add-btn focusable" data-action="open-portal">
+          <svg class="svg-icon-small" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Add</span>
+        </button>
+        <button class="top-square-btn focusable" data-action="open-help-modal" title="Help">
+          <span class="help-question-mark">?</span>
+        </button>
+        <button class="top-square-btn focusable" data-action="open-settings" title="Settings">
+          <svg class="svg-icon-small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <button class="top-solid-profile-btn focusable" data-action="open-accounts-modal" title="Account">
+          <svg class="svg-icon-small-dark" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span id="dash-profile-name">Default</span>
+        </button>
       </div>
     </header>
 
-    <!-- Main Workspace Area -->
-    <div class="dashboard-content">
-      <!-- Section 1: Live TV -->
-      <section id="section-live" class="dash-view active">
-        <!-- Categories Column -->
-        <aside class="sidebar-categories">
-          <div class="sidebar-header">
-            <h3>التصنيفات والباقات</h3>
+    <!-- Center: The Famous 3-Column Grid -->
+    <main class="dash-center-grid">
+      <!-- Column 1: Tall "Live TV" Card -->
+      <div class="dash-col col-1">
+        <button class="dash-card card-tall-live focusable active" data-action="open-livetv">
+          <div class="card-inner-glow"></div>
+          <div class="card-badge-circle">
+            <svg class="svg-card-hero" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
           </div>
-          <div id="categories-container" class="categories-scroll" role="list"></div>
-        </aside>
+          <div class="card-bottom-info">
+            <h2 class="card-main-title">Live TV</h2>
+            <p class="card-arabic-sub">البث المباشر</p>
+            <div class="card-count-pill" id="badge-live-count">0 Channels</div>
+          </div>
+        </button>
+      </div>
 
-        <!-- Channels Grid Area with Virtualization -->
-        <main class="channels-main">
-          <div class="channels-top-bar">
-            <h2 id="active-category-title" class="category-heading">جميع القنوات</h2>
-            <div class="category-meta">
-              <span id="channels-count-badge" class="badge-pill">0 قناة</span>
-              <span id="stream-engine-badge" class="badge-pill badge-neon">Auto Engine</span>
-            </div>
+      <!-- Column 2: Top "Films" + Bottom "Favorites" -->
+      <div class="dash-col col-2">
+        <!-- Top: Films Card -->
+        <button class="dash-card card-half focusable" data-action="open-movies">
+          <div class="card-badge-circle">
+            <svg class="svg-card-hero" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
           </div>
-          <!-- Channels Virtualized Viewport Container -->
-          <div id="channels-viewport" class="channels-viewport">
-            <div id="channels-grid" class="channels-grid"></div>
+          <div class="card-bottom-info">
+            <h2 class="card-main-title">Films</h2>
+            <p class="card-arabic-sub">الأفلام</p>
+            <div class="card-count-pill" id="badge-movies-count">0 Movies</div>
           </div>
-        </main>
-      </section>
+        </button>
 
-      <!-- Section 2: Movies (VOD) -->
-      <section id="section-movies" class="dash-view">
-        <aside class="sidebar-categories">
-          <div class="sidebar-header">
-            <h3>فئات الأفلام</h3>
+        <!-- Bottom: Favorites Card -->
+        <button class="dash-card card-half focusable" data-action="open-favorites">
+          <div class="card-badge-circle">
+            <svg class="svg-card-hero" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           </div>
-          <div id="vod-categories-container" class="categories-scroll"></div>
-        </aside>
-        <main class="channels-main">
-          <div class="channels-top-bar">
-            <h2 id="movies-category-title" class="category-heading">مكتبة الأفلام</h2>
-            <span id="movies-count-badge" class="badge-pill">0 فيلم</span>
+          <div class="card-bottom-info">
+            <h2 class="card-main-title">Favorites</h2>
+            <p class="card-arabic-sub">المفضلة</p>
+            <div class="card-count-pill" id="badge-fav-count">0 Items</div>
           </div>
-          <div id="movies-grid" class="vod-grid"></div>
-        </main>
-      </section>
+        </button>
+      </div>
 
-      <!-- Section 3: Series -->
-      <section id="section-series" class="dash-view">
-        <aside class="sidebar-categories">
-          <div class="sidebar-header">
-            <h3>فئات المسلسلات</h3>
+      <!-- Column 3: Top "Series" + Bottom "+ Add" -->
+      <div class="dash-col col-3">
+        <!-- Top: Series Card -->
+        <button class="dash-card card-half focusable" data-action="open-series">
+          <div class="card-badge-circle">
+            <svg class="svg-card-hero" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
           </div>
-          <div id="series-categories-container" class="categories-scroll"></div>
-        </aside>
-        <main class="channels-main">
-          <div class="channels-top-bar">
-            <h2 id="series-category-title" class="category-heading">المسلسلات</h2>
-            <span id="series-count-badge" class="badge-pill">0 مسلسل</span>
+          <div class="card-bottom-info">
+            <h2 class="card-main-title">Series</h2>
+            <p class="card-arabic-sub">المسلسلات</p>
+            <div class="card-count-pill" id="badge-series-count">0 Series</div>
           </div>
-          <div id="series-grid" class="vod-grid"></div>
-        </main>
-      </section>
+        </button>
 
-      <!-- Section 4: Favorites -->
-      <section id="section-favorites" class="dash-view">
-        <div class="simple-view-container">
-          <div class="channels-top-bar">
-            <h2 class="category-heading">⭐ القنوات المفضلة</h2>
-            <span id="favorites-count-badge" class="badge-pill">0 قناة</span>
+        <!-- Bottom: + Add Action Card -->
+        <button class="dash-card card-half card-action-add focusable" data-action="open-portal">
+          <div class="card-badge-circle">
+            <svg class="svg-card-hero" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </div>
-          <div id="favorites-grid" class="channels-grid"></div>
-          <div id="favorites-empty-msg" class="empty-state-card hidden">
-            <div class="empty-icon">⭐</div>
-            <h3>لا توجد قنوات في المفضلة</h3>
-            <p>اضغط على الزر الأصفر بالريموت كنترول أثناء مشاهدة أي قناة لإضافتها للمفضلة</p>
+          <div class="card-bottom-info">
+            <h2 class="card-main-title">Add Playlist</h2>
+            <p class="card-arabic-sub">إضافة باقة جديدة</p>
           </div>
-        </div>
-      </section>
+        </button>
+      </div>
+    </main>
 
-      <!-- Section 5: History -->
-      <section id="section-history" class="dash-view">
-        <div class="simple-view-container">
-          <div class="channels-top-bar">
-            <h2 class="category-heading">🕒 سجل المشاهدة الأخير</h2>
-            <button class="btn-sub focusable" data-action="clear-history">مسح السجل</button>
-          </div>
-          <div id="history-grid" class="channels-grid"></div>
-          <div id="history-empty-msg" class="empty-state-card hidden">
-            <div class="empty-icon">📺</div>
-            <h3>سجل المشاهدة فارغ</h3>
-            <p>ستظهر القنوات التي تشاهدها هنا للوصول السريع إليها</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section 6: Accounts Management -->
-      <section id="section-accounts" class="dash-view">
-        <div class="settings-card-wide">
-          <div class="settings-header-row">
-            <h2>👥 إدارة الحسابات والسيرفرات</h2>
-            <button class="btn-main-action focusable" data-action="add-new-account">
-              <span>+ إضافة اشتراك أو سيرفر جديد</span>
-            </button>
-          </div>
-          <div id="accounts-management-list" class="accounts-grid"></div>
-        </div>
-      </section>
-
-      <!-- Section 7: Settings -->
-      <section id="section-settings" class="dash-view">
-        <div class="settings-card-wide">
-          <h2>⚙️ إعدادات التطبيق والمشغل</h2>
-
-          <div class="settings-group">
-            <label class="setting-title">محرك تشغيل الفيديو (Video Player Engine):</label>
-            <div class="setting-options-row">
-              <button class="setting-pill focusable active" data-action="set-engine" data-engine="auto">
-                <span>تلقائي ذكي (مستحسن)</span>
-              </button>
-              <button class="setting-pill focusable" data-action="set-engine" data-engine="hls">
-                <span>Hls.js Engine</span>
-              </button>
-              <button class="setting-pill focusable" data-action="set-engine" data-engine="native">
-                <span>webOS Native Player</span>
-              </button>
-              <button class="setting-pill focusable" data-action="set-engine" data-engine="mpegts">
-                <span>MpegTS.js Engine</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="settings-group">
-            <label class="setting-title">اللغة (Language):</label>
-            <div class="setting-options-row">
-              <button class="setting-pill focusable active" data-action="set-lang" data-lang="ar">
-                <span>العربية (Arabic)</span>
-              </button>
-              <button class="setting-pill focusable" data-action="set-lang" data-lang="en">
-                <span>English</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="settings-group">
-            <label class="setting-title">القفل الأبوي (Parental Control PIN):</label>
-            <div class="setting-inline-row">
-              <input type="password" id="parental-pin-input" class="focusable ltr-input" maxlength="4" placeholder="رمز PIN من 4 أرقام">
-              <button class="btn-sub focusable" data-action="save-parental-pin">حفظ رمز القفل</button>
-              <span id="pin-status-label" class="setting-hint">الرمز الافتراضي: 0000</span>
-            </div>
-          </div>
-
-          <div class="settings-group danger-zone">
-            <label class="setting-title text-danger">منطقة البيانات:</label>
-            <p class="setting-hint">يقوم بمسح بيانات تطبيق Mluona فقط دون التأثير على إعدادات التلفاز الأخرى</p>
-            <div class="setting-options-row">
-              <button class="btn-danger focusable" data-action="clear-app-cache">
-                <span>مسح كاش القنوات والمفضلة</span>
-              </button>
-              <button class="btn-danger focusable" data-action="logout-current">
-                <span>تسجيل الخروج من الحساب الحالي</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- Bottom Remote Control Helper Bar (Legend) -->
-    <footer class="remote-legend-bar">
-      <div class="legend-item"><span class="legend-key key-red">🔴 الأحمر</span><span>خروج / إغلاق</span></div>
-      <div class="legend-item"><span class="legend-key key-green">🟢 الأخضر</span><span>تحديث القوائم</span></div>
-      <div class="legend-item"><span class="legend-key key-yellow">🟡 الأصفر</span><span>إضافة / حذف المفضلة</span></div>
-      <div class="legend-item"><span class="legend-key key-blue">🔵 الأزرق</span><span>بحث سريع</span></div>
-      <div class="legend-item"><span class="legend-key key-gray">CH +/-</span><span>تبديل القناة</span></div>
-      <div class="legend-item"><span class="legend-key key-gray">0-9</span><span>رقم القناة</span></div>
-      <div class="legend-item"><span class="legend-key key-gray">BACK</span><span>رجوع</span></div>
+    <!-- Bottom Bar: Status / Metadata -->
+    <footer class="dash-bottom-meta">
+      <div class="meta-left-row">
+        <span class="meta-label">Playlist:</span>
+        <span id="dash-playlist-name" class="meta-val-neon">Default</span>
+        <span class="meta-sep">|</span>
+        <span class="meta-label">Live:</span>
+        <span id="dash-meta-live" class="meta-val">0</span>
+        <span class="meta-sep">|</span>
+        <span class="meta-label">Films:</span>
+        <span id="dash-meta-movies" class="meta-val">0</span>
+        <span class="meta-sep">|</span>
+        <span class="meta-label">Series:</span>
+        <span id="dash-meta-series" class="meta-val">0</span>
+      </div>
+      <div class="meta-right-row">
+        <span class="meta-player-brand">MLUONA PLAYER • TV EDITION</span>
+      </div>
     </footer>
   </div>
 
-  <!-- Screen 3: Fullscreen Video Player -->
+  <!-- =========================================================================
+       SCREEN 4: LIVE TV (Exact Replica of LiveTvScreen.kt)
+       ========================================================================= -->
+  <div id="screen-livetv" class="screen">
+    <!-- Categories Column -->
+    <aside class="live-categories-col">
+      <div class="col-head-bar">
+        <button class="nav-back-circle focusable" data-action="live-go-back">
+          <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h3>التصنيفات والباقات</h3>
+      </div>
+      
+      <!-- Controlled Search Box: readonly until OK is pressed -->
+      <div class="col-search-box">
+        <div class="tv-search-wrapper focusable" data-action="activate-search-cat">
+          <svg class="svg-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="live-category-search" class="tv-clean-input" placeholder="بحث في الباقات (اضغط OK)" readonly>
+        </div>
+      </div>
+      <div id="live-categories-list" class="scroll-v-list"></div>
+    </aside>
+
+    <!-- Channels Column -->
+    <main class="live-channels-col">
+      <div class="col-head-bar space-between">
+        <div class="title-with-badge">
+          <h2 id="live-current-category-name">جميع القنوات</h2>
+          <span id="live-channel-count-badge" class="head-pill">0 قناة</span>
+        </div>
+
+        <!-- Controlled Search Box for Channels -->
+        <div class="col-search-box wide">
+          <div class="tv-search-wrapper focusable" data-action="activate-search-ch">
+            <svg class="svg-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="live-channel-search" class="tv-clean-input" placeholder="بحث عن قناة بالاسم أو الرقم (اضغط OK)" readonly>
+          </div>
+        </div>
+      </div>
+      <div id="live-channels-grid" class="channels-linear-list"></div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 5: MOVIES & SERIES (Exact Replica of MoviesScreen.kt)
+       ========================================================================= -->
+  <div id="screen-vod" class="screen">
+    <aside class="live-categories-col">
+      <div class="col-head-bar">
+        <button class="nav-back-circle focusable" data-action="vod-go-back">
+          <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h3 id="vod-sidebar-title">تصنيفات الأفلام</h3>
+      </div>
+      <div id="vod-categories-list" class="scroll-v-list"></div>
+    </aside>
+    <main class="live-channels-col">
+      <div class="col-head-bar space-between">
+        <h2 id="vod-current-category-name">قائمة المحتوى</h2>
+        <span id="vod-count-badge" class="head-pill">0 عنصر</span>
+      </div>
+      <div id="vod-items-grid" class="vod-posters-grid"></div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 6: FAVORITES SCREEN
+       ========================================================================= -->
+  <div id="screen-favorites" class="screen">
+    <div class="fullscreen-view-container">
+      <div class="col-head-bar">
+        <button class="nav-back-circle focusable" data-action="fav-go-back">
+          <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2>القنوات المفضلة</h2>
+        <span id="fav-count-pill" class="head-pill">0 قناة</span>
+      </div>
+      <div id="fav-channels-grid" class="channels-linear-list"></div>
+      <div id="fav-empty-msg" class="empty-state-notice hidden">
+        <svg class="notice-svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <h3>لا توجد قنوات في المفضلة بعد</h3>
+        <p>أثناء مشاهدة أي قناة، اضغط الزر الأصفر في الريموت لإضافتها للمفضلة</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 7: SETTINGS (Exact Replica of TvSettingsScreen.kt)
+       ========================================================================= -->
+  <div id="screen-settings" class="screen">
+    <div class="fullscreen-view-container">
+      <div class="col-head-bar">
+        <button class="nav-back-circle focusable" data-action="settings-go-back">
+          <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2>إعدادات المشغل والتطبيق</h2>
+      </div>
+
+      <div class="settings-scroll-body">
+        <!-- Section: Player Engine -->
+        <div class="settings-block-card">
+          <h3>محرك تشغيل الفيديو (Stream Player Engine)</h3>
+          <p class="setting-desc">اختر المحرك المناسب لبث سيرفرك لتفادي التقطيع أو مشاكل الصوت</p>
+          <div class="settings-pills-row">
+            <button class="opt-pill focusable active" data-action="cfg-engine" data-val="auto">تلقائي ذكي (Auto)</button>
+            <button class="opt-pill focusable" data-action="cfg-engine" data-val="hls">Hls.js Engine</button>
+            <button class="opt-pill focusable" data-action="cfg-engine" data-val="native">webOS Native Video</button>
+            <button class="opt-pill focusable" data-action="cfg-engine" data-val="mpegts">MpegTS.js (.ts)</button>
+          </div>
+        </div>
+
+        <!-- Section: Buffer Size -->
+        <div class="settings-block-card">
+          <h3>حجم الذاكرة المؤقتة (Buffer Size)</h3>
+          <p class="setting-desc">زيادة الـ Buffer تمنع التقطيع مع سرعات الإنترنت الضعيفة</p>
+          <div class="settings-pills-row">
+            <button class="opt-pill focusable active" data-action="cfg-buffer" data-val="medium">متوسط (15 ثانية)</button>
+            <button class="opt-pill focusable" data-action="cfg-buffer" data-val="large">كبير (30 ثانية)</button>
+            <button class="opt-pill focusable" data-action="cfg-buffer" data-val="fast">سريع للبثوث الرياضية (5 ثوانٍ)</button>
+          </div>
+        </div>
+
+        <!-- Section: Language -->
+        <div class="settings-block-card">
+          <h3>لغة التطبيق (Language)</h3>
+          <div class="settings-pills-row">
+            <button class="opt-pill focusable active" data-action="cfg-lang" data-val="ar">العربية (RTL)</button>
+            <button class="opt-pill focusable" data-action="cfg-lang" data-val="en">English (LTR)</button>
+          </div>
+        </div>
+
+        <!-- Section: Account & Cache -->
+        <div class="settings-block-card danger-border">
+          <h3 class="danger-txt">إدارة البيانات والحساب</h3>
+          <div class="settings-pills-row">
+            <button class="btn-danger-outline focusable" data-action="clear-app-cache">مسح كاش القنوات والمفضلة</button>
+            <button class="btn-danger-solid focusable" data-action="logout-active-account">تسجيل الخروج من الحساب الحالي</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 8: FULLSCREEN PLAYER (Exact Replica of TvPlayerScreen.kt)
+       ========================================================================= -->
   <div id="screen-player" class="screen">
-    <video id="video-element" class="fullscreen-video" playsinline></video>
+    <video id="video-element" class="full-tv-video" playsinline></video>
 
-    <!-- Buffering / Loading Indicator -->
-    <div id="player-spinner" class="player-spinner hidden">
-      <div class="spinner-circle"></div>
-      <p id="spinner-text">جارٍ فتح القناة والاتصال بالبث...</p>
+    <!-- Loading Spinner -->
+    <div id="player-loading-spinner" class="player-center-spinner hidden">
+      <div class="loading-ring"></div>
+      <p id="player-loading-txt">جارٍ فتح القناة والاتصال بالبث...</p>
     </div>
 
-    <!-- Player Error / Auto-Retry Banner -->
-    <div id="player-error-banner" class="player-error-banner hidden">
-      <div class="error-badge">⚠️ خطأ في تشغيل البث</div>
-      <p id="player-error-msg">تعذر الاتصال بسيرفر القناة. جارٍ إعادة المحاولة تلقائياً...</p>
-      <div class="retry-counter" id="retry-counter-text">المحاولة 1 من 3</div>
+    <!-- Error / Retry Banner -->
+    <div id="player-retry-banner" class="player-top-retry-box hidden">
+      <svg class="svg-warning-icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <div class="retry-texts">
+        <h4 id="retry-main-msg">انقطع البث. جارٍ إعادة المحاولة تلقائياً...</h4>
+        <p id="retry-counter-lbl">المحاولة 1 من 3</p>
+      </div>
     </div>
 
-    <!-- On-Screen Display (OSD) -->
-    <div id="player-osd" class="player-osd">
-      <div class="osd-top-row">
-        <div class="osd-channel-number" id="osd-channel-num">01</div>
-        <div class="osd-channel-details">
-          <div class="osd-title-line">
-            <h2 id="osd-channel-name">اسم القناة</h2>
-            <span id="osd-fav-icon" class="fav-star hidden">⭐ مفضلة</span>
-          </div>
-          <p id="osd-category-name" class="osd-category">باقة القنوات</p>
-          <div class="osd-epg-bar">
-            <span class="epg-now-badge">الآن:</span>
-            <span id="osd-epg-now" class="epg-title">البث المباشر للقناة</span>
-          </div>
+    <!-- 1. LIVE TV RECEIVER-STYLE CENTER BOTTOM BAR (Exact from TvPlayerScreen.kt line 909-999) -->
+    <div id="player-receiver-banner" class="receiver-bottom-bar hidden">
+      <div class="rec-num-badge" id="rec-channel-num">01</div>
+      <div class="rec-channel-title" id="rec-channel-name">اسم القناة</div>
+      <div class="rec-dot">•</div>
+      <div class="rec-program-title" id="rec-program-name">البث الحي المباشر</div>
+      <div class="rec-fhd-badge" id="rec-res-badge">FHD 1080p</div>
+      <div class="rec-freq-badge">11747 V 27500</div>
+    </div>
+
+    <!-- 2. FULL OSD CONTROLS (For VOD or when pressing OK) -->
+    <div id="player-full-osd" class="full-player-osd hidden">
+      <!-- Top Bar: Back & Title -->
+      <div class="osd-top-header">
+        <button class="nav-back-circle focusable" data-action="player-exit">
+          <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="osd-playing-title-box">
+          <h2 id="osd-media-title">اسم القناة</h2>
+          <span id="osd-category-sub" class="osd-sub">باقة القنوات</span>
         </div>
-
-        <div class="osd-status-tags">
-          <span class="tag-badge tag-neon" id="osd-resolution-badge">FHD 1080p</span>
-          <span class="tag-badge" id="osd-engine-badge">HLS.JS</span>
-          <span class="tag-badge tag-live">LIVE</span>
+        <div class="osd-top-badges">
+          <span class="osd-pill neon">LIVE</span>
+          <span class="osd-pill" id="osd-engine-lbl">HLS.JS</span>
+          <span class="osd-clock" id="osd-live-clock">00:00:00</span>
         </div>
       </div>
 
-      <div class="osd-bottom-row">
-        <div class="osd-instructions">
-          <span>اضغط <strong>▲ / ▼</strong> أو <strong>CH+/-</strong> للتبديل بين القنوات</span>
-          <span>•</span>
-          <span>اضغط <strong>🟡 الأصفر</strong> لإضافة القناة إلى المفضلة</span>
-          <span>•</span>
-          <span>اضغط <strong>BACK</strong> للخروج للوحة القنوات</span>
+      <!-- Bottom Bar: Seekbar & Controls (if VOD) -->
+      <div id="osd-vod-controls" class="osd-vod-panel hidden">
+        <div class="osd-seekbar-row">
+          <span id="osd-time-cur">00:00</span>
+          <div class="osd-seekbar-track">
+            <div id="osd-seekbar-fill" class="osd-seekbar-fill"></div>
+          </div>
+          <span id="osd-time-dur">00:00</span>
         </div>
-        <div class="osd-time" id="osd-clock">00:00</div>
+        <div class="osd-action-buttons">
+          <button class="osd-circle-btn focusable" data-action="player-rw10">
+            <svg class="svg-icon-small" viewBox="0 0 24 24"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+            <span>-10s</span>
+          </button>
+          <button class="osd-circle-btn focusable active" data-action="player-toggle-play" id="btn-play-pause">
+            <svg class="svg-icon-small" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </button>
+          <button class="osd-circle-btn focusable" data-action="player-ff10">
+            <svg class="svg-icon-small" viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+            <span>+10s</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Remote Helper Hint -->
+      <div class="osd-helper-line">
+        <span>▲ / ▼ أو CH+/- للتبديل</span>
+        <span>•</span>
+        <span>الزر الأصفر: مفضلة</span>
+        <span>•</span>
+        <span>0-9: رقم القناة</span>
+        <span>•</span>
+        <span>BACK: خروج</span>
       </div>
     </div>
   </div>
 
-  <!-- Parental PIN Dialog Modal -->
-  <div id="modal-pin" class="modal-overlay hidden">
-    <div class="modal-box">
-      <div class="modal-icon">🔒</div>
-      <h3>محتوى محمي بقفل أبوي</h3>
-      <p>أدخل رمز PIN المكون من 4 أرقام لفتح هذا القسم</p>
-      <input type="password" id="modal-pin-input" class="focusable ltr-input pin-big-input" maxlength="4" placeholder="••••">
-      <div class="modal-actions">
-        <button class="btn-main-action focusable" data-action="submit-pin">تأكيد الدخول</button>
-        <button class="btn-sub focusable" data-action="cancel-pin">إلغاء</button>
+  <!-- =========================================================================
+       MODALS: Xtream Login, M3U Load, Help, Accounts
+       ========================================================================= -->
+  <!-- Modal: Xtream Login -->
+  <div id="modal-xtream-login" class="modal-backdrop hidden">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>إضافة حساب Xtream Codes</h3>
+        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
       </div>
-      <div id="pin-modal-error" class="status-alert"></div>
+      <div class="modal-body-form">
+        <div class="form-row">
+          <label>اسم الحساب</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-name">
+            <input type="text" id="xtream-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>رابط السيرفر (Server Host URL)</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-host">
+            <input type="text" id="xtream-inp-host" class="modal-input ltr-txt" placeholder="http://server.com:8080 (اضغط OK)" readonly>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>اسم المستخدم (Username)</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-user">
+            <input type="text" id="xtream-inp-user" class="modal-input ltr-txt" placeholder="Username (اضغط OK)" readonly>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>كلمة المرور (Password)</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-pass">
+            <input type="password" id="xtream-inp-pass" class="modal-input ltr-txt" placeholder="Password (اضغط OK)" readonly>
+          </div>
+        </div>
+        <button class="btn-submit-action focusable" data-action="do-xtream-login">دخول وتشغيل القنوات</button>
+        <div id="xtream-modal-status" class="status-notice"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Main JavaScript Application Engine -->
+  <!-- Modal: M3U Load -->
+  <div id="modal-m3u-load" class="modal-backdrop hidden">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>تحميل قائمة M3U Playlist</h3>
+        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
+      </div>
+      <div class="modal-body-form">
+        <div class="form-row">
+          <label>اسم القائمة</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-name">
+            <input type="text" id="m3u-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>رابط قائمة M3U (M3U / M3U8 URL)</label>
+          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-url">
+            <input type="text" id="m3u-inp-url" class="modal-input ltr-txt" placeholder="http://example.com/playlist.m3u (اضغط OK)" readonly>
+          </div>
+        </div>
+        <button class="btn-submit-action focusable" data-action="do-m3u-login">تحميل القائمة</button>
+        <div id="m3u-modal-status" class="status-notice"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Help (?) -->
+  <div id="modal-help" class="modal-backdrop hidden">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>مساعدة واختصارات الريموت</h3>
+        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
+      </div>
+      <div class="modal-help-content">
+        <div class="help-row"><span class="key-badge">▲ / ▼ / ◀ / ▶</span><span>التنقل في القوائم والبطاقات</span></div>
+        <div class="help-row"><span class="key-badge">OK / ENTER</span><span>فتح وتشغيل أو إظهار معلومات القناة</span></div>
+        <div class="help-row"><span class="key-badge">BACK</span><span>الرجوع للشاشة السابقة أو الخروج</span></div>
+        <div class="help-row"><span class="key-badge">CH+ / CH-</span><span>التبديل الفوري بين القنوات</span></div>
+        <div class="help-row"><span class="key-badge">0 - 9</span><span>كتابة رقم القناة للانتقال المباشر</span></div>
+        <div class="help-row"><span class="key-badge yellow">الزر الأصفر</span><span>إضافة أو إزالة القناة من المفضلة</span></div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,25 +1,25 @@
 /* ==========================================================================
-   Mluona IPTV - Smart TV Production Stylesheet (1920x1080 Full HD)
-   Certified for LG webOS 3.0 up to webOS 24
-   Designed for 3-Meter Distance Readability (Font >= 20px, Headings >= 32px)
+   MLUONA IPTV - Exact Visual Replica of Android APK for LG webOS
+   Full HD 1080p (1920x1080) Television Standards
+   Colors: Neon Green (#00E676), Deep Dark (#050B08), Surface (#0C1319)
+   Pure Vector SVG Icons (No Emojis), Zero Accidental Openings on Focus
    ========================================================================== */
 
 :root {
-  --tv-bg: #050B08;
-  --tv-surface-1: #0A1611;
-  --tv-surface-2: #0F2219;
-  --tv-surface-3: #162E22;
-  --tv-neon: #00E676;
-  --tv-neon-glow: rgba(0, 230, 118, 0.45);
-  --tv-neon-hover: #00C853;
-  --tv-gold: #FFD54F;
-  --tv-danger: #FF5252;
-  --tv-border: #1B382B;
-  --tv-border-focused: #00E676;
-  --tv-text-white: #FFFFFF;
-  --tv-text-secondary: #B0BEC5;
-  --tv-text-muted: #78909C;
-  --tv-font-family: 'Segoe UI', 'Ubuntu', 'Roboto', 'Noto Sans Arabic', Tahoma, sans-serif;
+  --color-bg-dark: #050B08;
+  --color-surface-dark: #0C1319;
+  --color-surface-focused: #082218;
+  --color-neon-green: #00E676;
+  --color-neon-glow: rgba(0, 230, 118, 0.55);
+  --color-card-border: #162029;
+  --color-circle-badge: #0F261C;
+  --color-top-btn: #0D1714;
+  --color-top-btn-border: #162D22;
+  --color-gold: #FFD54F;
+  --color-danger: #FF5252;
+  --color-text-white: #FFFFFF;
+  --color-text-muted: #90A4AE;
+  --font-family-tv: 'Segoe UI', Tahoma, Geneva, Verdana, 'Noto Sans Arabic', sans-serif;
 }
 
 * {
@@ -35,27 +35,25 @@ body {
   width: 1920px;
   height: 1080px;
   overflow: hidden;
-  background-color: var(--tv-bg);
-  color: var(--tv-text-white);
-  font-family: var(--tv-font-family);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-white);
+  font-family: var(--font-family-tv);
   direction: rtl;
-  position: relative;
   font-size: 22px;
 }
 
-/* Ambient TV Glow */
 .tv-ambient-glow {
   position: fixed;
-  top: -150px;
+  top: -160px;
   left: 20%;
   width: 60%;
   height: 380px;
-  background: radial-gradient(circle, rgba(0, 230, 118, 0.09) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%);
   pointer-events: none;
   z-index: 1;
 }
 
-/* Screen Shell */
+/* Screen Switcher */
 .screen {
   display: none;
   width: 1920px;
@@ -71,7 +69,111 @@ body {
 }
 
 /* ==========================================================================
-   Remote Focus System (Critical for 3-Meter TV Visibility)
+   SVG Vector Icons (Clean & Sharp on 4K / Full HD Screens)
+   ========================================================================== */
+.svg-icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon-large {
+  width: 38px;
+  height: 38px;
+  stroke: var(--color-neon-green);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon-small {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon-small-dark {
+  width: 20px;
+  height: 20px;
+  stroke: #000000;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon-neon {
+  width: 32px;
+  height: 32px;
+  stroke: var(--color-neon-green);
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(0, 230, 118, 0.5));
+}
+
+.svg-card-hero {
+  width: 44px;
+  height: 44px;
+  stroke: var(--color-neon-green);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-search-icon {
+  width: 20px;
+  height: 20px;
+  stroke: var(--color-text-muted);
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  margin-left: 10px;
+}
+
+.svg-warning-icon {
+  width: 38px;
+  height: 38px;
+  stroke: var(--color-danger);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon-arrow {
+  width: 22px;
+  height: 22px;
+  stroke: #FFFFFF;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notice-svg-icon {
+  width: 48px;
+  height: 48px;
+  stroke: var(--color-gold);
+  stroke-width: 2;
+  fill: rgba(255, 213, 79, 0.2);
+  margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   Remote Control Focus System (TV Viewing from 3 Meters)
    ========================================================================== */
 .focusable {
   outline: none;
@@ -84,692 +186,810 @@ body {
 .focusable:focus,
 .focusable.focused {
   transform: scale(1.035);
-  outline: 3.5px solid var(--tv-neon) !important;
-  border-color: var(--tv-neon) !important;
-  box-shadow: 0 0 28px var(--tv-neon-glow) !important;
+  outline: 3.5px solid var(--color-neon-green) !important;
+  border-color: var(--color-neon-green) !important;
+  box-shadow: 0 0 28px var(--color-neon-glow) !important;
   z-index: 50 !important;
 }
 
 /* ==========================================================================
-   Header & Navigation
+   Controlled Search Box (Prevents Automatic Virtual Keyboard Opening)
    ========================================================================== */
-.app-header {
-  height: 100px;
-  background: var(--tv-surface-1);
-  border-bottom: 2px solid var(--tv-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 50px;
-  z-index: 20;
+.col-search-box {
+  margin-bottom: 14px;
 }
 
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
+.col-search-box.wide {
+  width: 380px;
+  margin-bottom: 0;
 }
 
-.neon-brand {
-  color: var(--tv-neon);
-  text-shadow: 0 0 16px rgba(0, 230, 118, 0.4);
-}
-
-.white-brand {
-  color: #FFFFFF;
-}
-
-.header-nav {
-  display: flex;
-  gap: 12px;
-}
-
-.nav-tab {
-  padding: 12px 24px;
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 14px;
-  color: var(--tv-text-secondary);
-  font-size: 22px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-tab.active {
-  background: rgba(0, 230, 118, 0.16);
-  border-color: var(--tv-neon);
-  color: var(--tv-neon);
-}
-
-.header-tools {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.search-box input {
-  width: 280px;
-  height: 48px;
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
+.tv-search-wrapper {
+  width: 100%;
+  height: 52px;
+  background: #050E0A;
+  border: 1.5px solid var(--color-card-border);
   border-radius: 12px;
-  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+.tv-search-wrapper.typing {
+  border-color: var(--color-neon-green) !important;
+  box-shadow: 0 0 20px var(--color-neon-glow) !important;
+  background: #081C12 !important;
+}
+
+.tv-clean-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
   color: #FFFFFF;
   font-size: 19px;
   font-family: inherit;
+  cursor: pointer;
 }
 
-.live-clock {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--tv-gold);
-  min-width: 80px;
-  text-align: left;
+.modal-inp-wrapper {
+  width: 100%;
+  height: 56px;
+  background: #050E0A;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+}
+
+.modal-inp-wrapper.typing {
+  border-color: var(--color-neon-green) !important;
+  box-shadow: 0 0 20px var(--color-neon-glow) !important;
+  background: #081C12 !important;
+}
+
+.modal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-size: 20px;
+  font-family: inherit;
 }
 
 /* ==========================================================================
-   Main Workspace & Views
+   SCREEN 1: SPLASH SCREEN (Exact match with SplashScreen.kt)
    ========================================================================== */
-#screen-dashboard {
-  flex-direction: column;
+#screen-splash {
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-bg-dark);
 }
 
-.dashboard-content {
-  flex: 1;
+.splash-center-box {
   display: flex;
-  overflow: hidden;
-  position: relative;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  animation: splashPulse 1.2s ease-out forwards;
 }
 
-.dash-view {
-  display: none;
+@keyframes splashPulse {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1.0); opacity: 1; }
+}
+
+.splash-icon-card {
+  width: 170px;
+  height: 170px;
+  border-radius: 36px;
+  border: 2.5px solid var(--color-neon-green);
+  box-shadow: 0 0 35px var(--color-neon-glow);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0B1611;
+}
+
+.splash-logo-img {
   width: 100%;
   height: 100%;
-}
-
-.dash-view.active {
-  display: flex;
-}
-
-/* Sidebar Categories */
-.sidebar-categories {
-  width: 440px;
-  background: var(--tv-surface-1);
-  border-left: 2px solid var(--tv-border);
-  display: flex;
-  flex-direction: column;
-  padding: 24px 28px;
-}
-
-.sidebar-header h3 {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--tv-text-white);
-  margin-bottom: 20px;
-}
-
-.categories-scroll {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 8px;
-}
-
-.categories-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.categories-scroll::-webkit-scrollbar-thumb {
-  background: var(--tv-border);
-  border-radius: 4px;
-}
-
-.cat-btn {
-  width: 100%;
-  padding: 16px 20px;
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 14px;
-  color: var(--tv-text-secondary);
-  font-size: 22px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: right;
-  font-family: inherit;
-}
-
-.cat-btn.active {
-  background: rgba(0, 230, 118, 0.22);
-  border-color: var(--tv-neon);
-  color: var(--tv-neon);
-  font-weight: 800;
-}
-
-.cat-badge {
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
-  border-radius: 8px;
-  color: inherit;
-}
-
-/* Channels View Area */
-.channels-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 24px 40px;
-  overflow: hidden;
-}
-
-.channels-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.category-heading {
-  font-size: 32px;
-  font-weight: 900;
-  color: #FFFFFF;
-}
-
-.category-meta {
-  display: flex;
-  gap: 14px;
-}
-
-.badge-pill {
-  background: var(--tv-surface-2);
-  border: 1px solid var(--tv-border);
-  padding: 8px 18px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.badge-neon {
-  color: var(--tv-neon);
-  border-color: var(--tv-neon);
-  background: rgba(0, 230, 118, 0.12);
-}
-
-.channels-viewport {
-  flex: 1;
-  overflow-y: auto;
-  padding-left: 8px;
-}
-
-.channels-viewport::-webkit-scrollbar {
-  width: 8px;
-}
-.channels-viewport::-webkit-scrollbar-thumb {
-  background: var(--tv-border);
-  border-radius: 4px;
-}
-
-.channels-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 115px;
-  gap: 16px;
-}
-
-.channel-card {
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 16px;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  text-align: right;
-  font-family: inherit;
-}
-
-.ch-number {
-  font-size: 26px;
-  font-weight: 900;
-  color: var(--tv-neon);
-  min-width: 44px;
-}
-
-.ch-body {
-  flex: 1;
-  overflow: hidden;
-}
-
-.ch-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: #FFFFFF;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 4px;
-}
-
-.ch-epg {
-  font-size: 16px;
-  color: var(--tv-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ch-star {
-  font-size: 22px;
-  color: var(--tv-gold);
-}
-
-/* VOD (Movies & Series Grid) */
-.vod-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: 290px;
-  gap: 20px;
-}
-
-.vod-card {
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.vod-poster {
-  width: 100%;
-  height: 200px;
   object-fit: cover;
-  background: #020604;
 }
 
-.vod-info {
-  padding: 12px 14px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.vod-title {
-  font-size: 20px;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #FFFFFF;
-}
-
-.vod-rating {
-  font-size: 16px;
-  color: var(--tv-gold);
-  margin-top: 4px;
-}
-
-/* Simple view (Favorites & History) */
-.simple-view-container {
-  width: 100%;
-  padding: 30px 60px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.empty-state-card {
-  margin: 60px auto;
+.splash-titles {
   text-align: center;
-  background: var(--tv-surface-1);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 24px;
-  padding: 50px 70px;
-  max-width: 700px;
 }
 
-.empty-icon {
-  font-size: 60px;
-  margin-bottom: 16px;
+.splash-brand-neon {
+  font-size: 46px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--color-neon-green);
+  text-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
 }
 
-.empty-state-card h3 {
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.empty-state-card p {
+.splash-edition {
   font-size: 20px;
-  color: var(--tv-text-secondary);
-}
-
-/* Settings & Accounts Cards */
-.settings-card-wide {
-  width: 100%;
-  padding: 40px 60px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.settings-group {
-  background: var(--tv-surface-1);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 20px;
-  padding: 28px 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.setting-title {
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.setting-options-row {
-  display: flex;
-  gap: 16px;
-}
-
-.setting-pill {
-  padding: 14px 28px;
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 12px;
-  color: var(--tv-text-secondary);
-  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--color-text-muted);
+  margin-top: 6px;
   font-weight: 700;
-}
-
-.setting-pill.active {
-  background: rgba(0, 230, 118, 0.18);
-  border-color: var(--tv-neon);
-  color: var(--tv-neon);
-  font-weight: 800;
-}
-
-.setting-inline-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.setting-hint {
-  font-size: 18px;
-  color: var(--tv-text-muted);
-}
-
-.danger-zone {
-  border-color: rgba(255, 82, 82, 0.4);
-}
-
-.text-danger {
-  color: var(--tv-danger);
-}
-
-.btn-danger {
-  padding: 14px 28px;
-  background: rgba(255, 82, 82, 0.15);
-  border: 1.5px solid var(--tv-danger);
-  border-radius: 12px;
-  color: var(--tv-danger);
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.btn-sub {
-  padding: 12px 24px;
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 12px;
-  color: var(--tv-text-white);
-  font-size: 20px;
-  font-weight: 700;
-}
-
-/* Accounts Grid */
-.accounts-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.account-box {
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 18px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.account-box.active {
-  border-color: var(--tv-neon);
-  box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
 }
 
 /* ==========================================================================
-   Remote Control Legend Bar
-   ========================================================================== */
-.remote-legend-bar {
-  height: 55px;
-  background: #030705;
-  border-top: 1.5px solid var(--tv-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 36px;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.legend-key {
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 15px;
-}
-
-.key-red { background: rgba(255, 82, 82, 0.25); color: #FF5252; }
-.key-green { background: rgba(0, 230, 118, 0.25); color: #00E676; }
-.key-yellow { background: rgba(255, 213, 79, 0.25); color: #FFD54F; }
-.key-blue { background: rgba(68, 138, 255, 0.25); color: #448AFF; }
-.key-gray { background: rgba(255, 255, 255, 0.15); color: #FFFFFF; }
-
-/* ==========================================================================
-   Screen 1: Portal Screen (Login / Connect)
+   SCREEN 2: PORTAL SCREEN (Exact match with TvPortalScreen.kt)
    ========================================================================== */
 #screen-portal {
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at center, #0E2419 0%, var(--tv-bg) 85%);
+  background-color: var(--color-bg-dark);
+  position: relative;
 }
 
-.portal-modal-container {
-  width: 820px;
-  background: var(--tv-surface-1);
-  border: 2px solid var(--tv-border);
-  border-radius: 32px;
-  padding: 44px 56px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-}
-
-.brand-badge-icon {
-  font-size: 54px;
-}
-
-.brand-titles {
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.portal-tagline {
-  color: var(--tv-text-secondary);
-  font-size: 20px;
-  margin: 12px 0 26px;
-  text-align: center;
-}
-
-.portal-tabs {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 16px;
-  background: var(--tv-surface-2);
-  border: 1.5px solid var(--tv-border);
-  border-radius: 14px;
-  color: var(--tv-text-secondary);
-  font-size: 22px;
+.portal-top-back-btn {
+  position: absolute;
+  top: 40px;
+  left: 50px;
+  height: 48px;
+  padding: 0 20px;
+  background: #0C1611;
+  border: 1.5px solid var(--color-top-btn-border);
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-size: 19px;
   font-weight: 800;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+}
+
+.portal-modal-card {
+  width: 760px;
+  background: linear-gradient(to bottom, #0C1611, #08120D, var(--color-bg-dark));
+  border: 2px solid #14271E;
+  border-radius: 32px;
+  padding: 44px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+}
+
+.portal-brand-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.portal-logo-badge {
+  width: 90px;
+  height: 90px;
+  border-radius: 22px;
+  border: 2px solid var(--color-neon-green);
+  overflow: hidden;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 20px var(--color-neon-glow);
+}
+
+.portal-logo-mini {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portal-brand-header h2 {
+  font-size: 36px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.portal-brand-header p {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+}
+
+.portal-two-options {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.portal-option-card {
+  flex: 1;
+  background: #081F15;
+  border: 2px solid #14271E;
+  border-radius: 22px;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 12px;
   font-family: inherit;
-}
-
-.tab-btn.active {
-  background: rgba(0, 230, 118, 0.2);
-  border-color: var(--tv-neon);
-  color: var(--tv-neon);
-}
-
-.tab-form {
-  display: none;
-  width: 100%;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tab-form.active {
-  display: flex;
-}
-
-.input-block {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.input-block label {
-  font-size: 18px;
-  color: var(--tv-text-secondary);
-  font-weight: 700;
-}
-
-.input-block input {
-  width: 100%;
-  height: 56px;
-  background: #050E09;
-  border: 1.8px solid var(--tv-border);
-  border-radius: 12px;
-  padding: 0 20px;
   color: #FFFFFF;
-  font-size: 20px;
-  font-family: inherit;
 }
 
-.ltr-input {
-  direction: ltr !important;
-  text-align: left !important;
-}
-
-.input-row {
-  display: flex;
-  gap: 16px;
-}
-
-.flex-1 { flex: 1; }
-
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-wrapper input {
-  padding-left: 56px;
-}
-
-.toggle-pass-btn {
-  position: absolute;
-  left: 10px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  padding: 8px;
-  color: var(--tv-text-secondary);
-}
-
-.btn-main-action {
-  width: 100%;
-  height: 64px;
-  background: linear-gradient(135deg, var(--tv-neon), var(--tv-neon-hover));
-  color: #000000;
-  border: none;
-  border-radius: 16px;
-  font-size: 24px;
-  font-weight: 900;
-  margin-top: 10px;
-  font-family: inherit;
+.option-icon-circle {
+  width: 70px;
+  height: 70px;
+  background: #0F261C;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.status-alert {
-  margin-top: 14px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tv-gold);
-  min-height: 28px;
-  text-align: center;
+.portal-option-card h3 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.portal-option-card p {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.option-tag {
+  background: rgba(0, 230, 118, 0.15);
+  color: var(--color-neon-green);
+  border: 1px solid var(--color-neon-green);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
 }
 
 /* ==========================================================================
-   Screen 3: Fullscreen Video Player & OSD
+   SCREEN 3: DASHBOARD (Exact match with TvDashboardScreen.kt 3 Columns)
+   ========================================================================== */
+#screen-dashboard {
+  flex-direction: column;
+  padding: 32px 50px 20px;
+}
+
+/* Top Header Bar */
+.dash-top-bar {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dash-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash-logo-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-logo-text {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.neon-txt {
+  color: var(--color-neon-green);
+  text-shadow: 0 0 14px rgba(0, 230, 118, 0.4);
+}
+
+.white-txt {
+  color: #FFFFFF;
+}
+
+.dash-version-badge {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-neon-green);
+  background: rgba(0, 230, 118, 0.15);
+  border: 1px solid var(--color-neon-green);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.dash-clock-divider {
+  font-size: 24px;
+  color: #263238;
+}
+
+.dash-datetime-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.dash-neon-clock {
+  color: var(--color-gold);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.dash-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.top-pill-add-btn {
+  height: 48px;
+  padding: 0 22px;
+  background: var(--color-top-btn);
+  border: 1.5px solid var(--color-top-btn-border);
+  border-radius: 24px;
+  color: var(--color-neon-green);
+  font-size: 19px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.top-square-btn {
+  width: 48px;
+  height: 48px;
+  background: var(--color-top-btn);
+  border: 1.5px solid var(--color-top-btn-border);
+  border-radius: 14px;
+  color: #FFFFFF;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.help-question-mark {
+  font-size: 22px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.top-solid-profile-btn {
+  height: 48px;
+  padding: 0 20px;
+  background: var(--color-neon-green);
+  color: #000000;
+  border: none;
+  border-radius: 24px;
+  font-size: 19px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+}
+
+/* The Center 3 Columns */
+.dash-center-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.dash-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.dash-card {
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-card-border);
+  border-radius: 24px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-card.active,
+.dash-card:focus {
+  background: var(--color-surface-focused);
+}
+
+.card-tall-live {
+  height: 100%;
+}
+
+.card-half {
+  flex: 1;
+}
+
+.card-badge-circle {
+  width: 80px;
+  height: 80px;
+  background: var(--color-circle-badge);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.card-main-title {
+  font-size: 34px;
+  font-weight: 900;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.card-arabic-sub {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.card-count-pill {
+  display: inline-block;
+  background: rgba(0, 230, 118, 0.16);
+  border: 1.2px solid var(--color-neon-green);
+  color: var(--color-neon-green);
+  font-size: 18px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 12px;
+}
+
+.card-action-add {
+  background: rgba(0, 230, 118, 0.08);
+  border-style: dashed;
+  border-color: rgba(0, 230, 118, 0.4);
+}
+
+/* Bottom Bar */
+.dash-bottom-meta {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1.5px solid var(--color-card-border);
+  padding-top: 8px;
+  font-size: 19px;
+}
+
+.meta-left-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta-label {
+  color: var(--color-text-muted);
+}
+
+.meta-val-neon {
+  color: var(--color-neon-green);
+  font-weight: 900;
+}
+
+.meta-val {
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+.meta-sep {
+  color: #263238;
+}
+
+.meta-player-brand {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   SCREEN 4 & 5: LIVE TV & VOD SCREENS
+   ========================================================================== */
+#screen-livetv,
+#screen-vod {
+  background: var(--color-bg-dark);
+}
+
+.live-categories-col {
+  width: 480px;
+  background: var(--color-surface-dark);
+  border-left: 2px solid var(--color-card-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.col-head-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.col-head-bar.space-between {
+  justify-content: space-between;
+}
+
+.nav-back-circle {
+  width: 44px;
+  height: 44px;
+  background: #14271E;
+  border: 1.5px solid var(--color-neon-green);
+  border-radius: 50%;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-v-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 6px;
+}
+
+.scroll-v-list::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-v-list::-webkit-scrollbar-thumb {
+  background: var(--color-card-border);
+  border-radius: 3px;
+}
+
+.cat-item-btn {
+  width: 100%;
+  padding: 16px 20px;
+  background: #081810;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 14px;
+  color: var(--color-text-muted);
+  font-size: 21px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  font-family: inherit;
+}
+
+.cat-item-btn.active {
+  background: rgba(0, 230, 118, 0.22);
+  border-color: var(--color-neon-green);
+  color: var(--color-neon-green);
+  font-weight: 900;
+}
+
+.live-channels-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 36px;
+  overflow: hidden;
+}
+
+.channels-linear-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 6px;
+}
+
+.ch-row-card {
+  width: 100%;
+  height: 78px;
+  background: #0B1711;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 14px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: inherit;
+  text-align: right;
+}
+
+.ch-num-badge {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-neon-green);
+  min-width: 48px;
+}
+
+.ch-name-txt {
+  flex: 1;
+  font-size: 23px;
+  font-weight: 800;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ch-fav-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Posters Grid (VOD) */
+.vod-posters-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 290px;
+  gap: 20px;
+  padding-left: 6px;
+}
+
+.vod-item-card {
+  background: #0C1319;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.vod-thumb {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: #040906;
+}
+
+.vod-meta {
+  padding: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vod-name {
+  font-size: 20px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   SCREEN 7: SETTINGS SCREEN
+   ========================================================================== */
+#screen-settings,
+#screen-favorites {
+  background: var(--color-bg-dark);
+}
+
+.fullscreen-view-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 60px;
+}
+
+.settings-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-left: 10px;
+}
+
+.settings-block-card {
+  background: var(--color-surface-dark);
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 20px;
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-block-card.danger-border {
+  border-color: rgba(255, 82, 82, 0.4);
+}
+
+.setting-desc {
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.settings-pills-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.opt-pill {
+  padding: 14px 26px;
+  background: #081710;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  font-size: 20px;
+  font-weight: 800;
+  font-family: inherit;
+}
+
+.opt-pill.active {
+  background: rgba(0, 230, 118, 0.2);
+  border-color: var(--color-neon-green);
+  color: var(--color-neon-green);
+}
+
+.btn-danger-outline {
+  padding: 14px 28px;
+  background: rgba(255, 82, 82, 0.12);
+  border: 1.5px solid var(--color-danger);
+  border-radius: 12px;
+  color: var(--color-danger);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.btn-danger-solid {
+  padding: 14px 28px;
+  background: var(--color-danger);
+  border: none;
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* ==========================================================================
+   SCREEN 8: FULLSCREEN PLAYER (Exact match with TvPlayerScreen.kt line 909-999)
    ========================================================================== */
 #screen-player {
   background: #000000;
 }
 
-.fullscreen-video {
+.full-tv-video {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #000000;
 }
 
-/* Buffering Spinner */
-.player-spinner {
+/* Buffering / Loading */
+.player-center-spinner {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -777,233 +997,240 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 30px 50px;
+  gap: 18px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1.5px solid var(--color-card-border);
   border-radius: 20px;
-  border: 1.5px solid var(--tv-border);
+  padding: 30px 50px;
 }
 
-.spinner-circle {
+.loading-ring {
   width: 60px;
   height: 60px;
   border: 5px solid rgba(0, 230, 118, 0.2);
-  border-top-color: var(--tv-neon);
+  border-top-color: var(--color-neon-green);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spinRing 0.8s linear infinite;
 }
 
-@keyframes spin {
+@keyframes spinRing {
   to { transform: rotate(360deg); }
 }
 
-.player-spinner p {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--tv-text-white);
-}
-
-/* Error Banner */
-.player-error-banner {
+/* Receiver-Style Center Bottom Bar (Exact match with Android lines 926-999) */
+.receiver-bottom-bar {
   position: absolute;
-  top: 120px;
+  bottom: 34px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(15, 0, 0, 0.9);
-  border: 2px solid var(--tv-danger);
-  border-radius: 18px;
-  padding: 24px 40px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  padding: 10px 24px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 40px rgba(255, 82, 82, 0.4);
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   z-index: 100;
+  transition: opacity 0.3s ease;
 }
 
-.error-badge {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--tv-danger);
+.rec-num-badge {
+  background: rgba(0, 230, 118, 0.22);
+  border: 1px solid rgba(0, 230, 118, 0.8);
+  border-radius: 6px;
+  padding: 2px 10px;
+  color: var(--color-neon-green);
+  font-size: 19px;
+  font-weight: 900;
 }
 
-.retry-counter {
+.rec-channel-title {
+  color: #FFFFFF;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.rec-dot {
+  color: var(--color-neon-green);
   font-size: 18px;
-  color: var(--tv-gold);
+}
+
+.rec-program-title {
+  color: #A5D6A7;
+  font-size: 19px;
   font-weight: 700;
 }
 
-/* OSD Overlay */
-.player-osd {
+.rec-fhd-badge,
+.rec-freq-badge {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: #E0E0E0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Full OSD Overlay */
+.full-player-osd {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 60%, transparent 100%);
-  padding: 50px 80px 36px;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.92) 100%);
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  z-index: 80;
+  justify-content: space-between;
+  padding: 40px 60px;
+  z-index: 90;
 }
 
-.player-osd.hidden {
-  opacity: 0;
-  transform: translateY(30px);
-  pointer-events: none;
-}
-
-.osd-top-row {
+.osd-top-header {
   display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: space-between;
 }
 
-.osd-channel-number {
-  font-size: 58px;
-  font-weight: 900;
-  color: var(--tv-neon);
-  text-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
-  min-width: 90px;
-}
-
-.osd-channel-details {
-  flex: 1;
-}
-
-.osd-title-line {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.osd-title-line h2 {
-  font-size: 38px;
+.osd-playing-title-box h2 {
+  font-size: 32px;
   font-weight: 900;
   color: #FFFFFF;
 }
 
-.fav-star {
-  font-size: 20px;
-  color: var(--tv-gold);
-  background: rgba(255, 213, 79, 0.15);
-  padding: 4px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--tv-gold);
+.osd-sub {
+  font-size: 18px;
+  color: var(--color-text-muted);
 }
 
-.osd-category {
-  font-size: 22px;
-  color: var(--tv-text-secondary);
-  margin-top: 4px;
-}
-
-.osd-epg-bar {
+.osd-top-badges {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.epg-now-badge {
-  background: var(--tv-neon);
-  color: #000000;
-  font-size: 16px;
-  font-weight: 900;
-  padding: 2px 8px;
-  border-radius: 6px;
-}
-
-.epg-title {
-  font-size: 20px;
-  color: #FFFFFF;
-}
-
-.osd-status-tags {
-  display: flex;
   gap: 12px;
 }
 
-.tag-badge {
-  background: rgba(255, 255, 255, 0.12);
-  padding: 8px 18px;
-  border-radius: 10px;
-  font-size: 18px;
+.osd-pill {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 16px;
   font-weight: 800;
 }
 
-.tag-neon {
+.osd-pill.neon {
   background: rgba(0, 230, 118, 0.2);
-  color: var(--tv-neon);
-  border: 1.5px solid var(--tv-neon);
+  color: var(--color-neon-green);
+  border: 1px solid var(--color-neon-green);
 }
 
-.tag-live {
-  background: rgba(255, 82, 82, 0.2);
-  color: var(--tv-danger);
-  border: 1.5px solid var(--tv-danger);
-}
-
-.osd-bottom-row {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  padding-top: 16px;
-  font-size: 18px;
-  color: var(--tv-text-secondary);
-}
-
-.osd-time {
-  font-size: 24px;
+.osd-clock {
+  font-size: 22px;
   font-weight: 800;
-  color: var(--tv-gold);
+  color: var(--color-gold);
 }
 
-/* Number Jump OSD */
-.number-jump-osd {
-  position: fixed;
-  top: 60px;
-  right: 60px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 2px solid var(--tv-neon);
-  border-radius: 18px;
-  padding: 16px 32px;
+.osd-vod-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.osd-seekbar-row {
   display: flex;
   align-items: center;
   gap: 16px;
-  z-index: 200;
-  box-shadow: 0 0 30px var(--tv-neon-glow);
+  font-size: 18px;
+  font-weight: 800;
 }
 
-.jump-label {
-  font-size: 22px;
-  color: var(--tv-text-secondary);
+.osd-seekbar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.osd-seekbar-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--color-neon-green);
+}
+
+.osd-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.osd-circle-btn {
+  padding: 10px 24px;
+  background: #0C1611;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.osd-circle-btn.active {
+  background: var(--color-neon-green);
+  color: #000000;
+}
+
+.osd-helper-line {
+  text-align: center;
+  font-size: 17px;
+  color: var(--color-text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 14px;
+}
+
+/* Number Jump Box (CH: 12 - ) */
+.number-jump-box {
+  position: fixed;
+  top: 50px;
+  right: 60px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid var(--color-neon-green);
+  border-radius: 16px;
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 300;
+  box-shadow: 0 0 25px var(--color-neon-glow);
+}
+
+.jump-prefix {
+  font-size: 26px;
+  color: var(--color-text-muted);
+  font-weight: 800;
 }
 
 .jump-digits {
   font-size: 42px;
   font-weight: 900;
-  color: var(--tv-neon);
+  color: var(--color-neon-green);
 }
 
-/* Network Offline Banner */
-.network-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #D32F2F;
-  color: #FFFFFF;
-  text-align: center;
-  padding: 12px;
-  font-size: 20px;
-  font-weight: 800;
-  z-index: 300;
+.jump-cursor {
+  font-size: 42px;
+  color: var(--color-neon-green);
+  animation: blinkCursor 0.6s infinite alternate;
 }
 
-/* Modal Dialog */
-.modal-overlay {
+@keyframes blinkCursor {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modals */
+.modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -1016,38 +1243,118 @@ body {
   z-index: 250;
 }
 
-.modal-box {
-  width: 580px;
-  background: var(--tv-surface-1);
-  border: 2px solid var(--tv-border);
+.modal-window {
+  width: 680px;
+  background: var(--color-surface-dark);
+  border: 2px solid var(--color-neon-green);
   border-radius: 28px;
-  padding: 40px;
+  padding: 36px 44px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  color: var(--color-text-muted);
+}
+
+.modal-body-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row label {
+  font-size: 18px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.ltr-txt {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.btn-submit-action {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(135deg, var(--color-neon-green), #00C853);
+  color: #000000;
+  border: none;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 8px;
+  font-family: inherit;
+}
+
+.status-notice {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-gold);
+  min-height: 24px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.modal-help-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.help-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 20px;
+}
+
+.key-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.key-badge.yellow {
+  background: rgba(255, 213, 79, 0.2);
+  color: var(--color-gold);
+}
+
+.empty-state-notice {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  margin: 80px auto;
   text-align: center;
-  gap: 16px;
 }
 
-.modal-icon { font-size: 50px; }
-.modal-box h3 { font-size: 28px; font-weight: 900; }
-.modal-box p { font-size: 19px; color: var(--tv-text-secondary); }
-
-.pin-big-input {
-  width: 220px;
-  height: 64px;
-  font-size: 36px !important;
-  letter-spacing: 14px;
-  text-align: center !important;
-  border: 2px solid var(--tv-neon) !important;
-  border-radius: 14px;
+.empty-state-notice h3 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
-.modal-actions {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-  margin-top: 10px;
+.empty-state-notice p {
+  font-size: 18px;
+  color: var(--color-text-muted);
 }
 
 .hidden {

@@ -1,28 +1,25 @@
 /**
- * Mluona IPTV - Smart TV Production Engine for LG webOS (3.0 - 24)
- * Architecture: Modular State Machine, Virtualized Channel Viewport,
- * Hybrid Hls.js / mpegts.js / Native Video Engine, Full Magic Remote & D-pad Controller.
+ * MLUONA IPTV - Smart TV Production Engine for LG webOS
+ * 1:1 Pixel-Perfect & Functional Replica of the Android TV APK
+ * Pure Vector SVG Icons, Zero Accidental Modal/Input Popups on D-Pad Focus
  */
 
 (function () {
   'use strict';
 
-  // =========================================================================
-  // Storage Keys & Constants
-  // =========================================================================
-  const STORAGE_KEYS = {
-    ACCOUNTS: 'mluona_accounts_v1',
-    ACTIVE_ACCOUNT: 'mluona_active_account_id',
-    FAVORITES: 'mluona_favorites_v1',
-    HISTORY: 'mluona_history_v1',
-    LAST_CHANNEL: 'mluona_last_played_ch',
-    LANG: 'mluona_language_code',
-    PIN: 'mluona_parental_pin_v1',
-    ENGINE: 'mluona_stream_engine_choice'
+  // Storage Keys
+  const STORAGE = {
+    ACCOUNTS: 'mluona_accounts_v2',
+    ACTIVE_ACCOUNT: 'mluona_active_account_id_v2',
+    FAVORITES: 'mluona_favorites_v2',
+    HISTORY: 'mluona_history_v2',
+    ENGINE: 'mluona_engine_v2',
+    BUFFER: 'mluona_buffer_v2',
+    LANG: 'mluona_lang_v2'
   };
 
   // Remote Control Key Codes
-  const RC_KEYS = {
+  const KEYS = {
     ENTER: 13,
     LEFT: 37,
     UP: 38,
@@ -39,176 +36,202 @@
     CH_DOWN: 34,
     PLAY: 415,
     PAUSE: 19,
-    PLAY_PAUSE: 402,
-    STOP: 413,
-    FF: 417,
-    REWIND: 412
+    PLAY_PAUSE: 402
   };
 
-  // =========================================================================
   // Application State
-  // =========================================================================
   const state = {
-    currentScreen: 'screen-portal',
-    activeNavTarget: 'live',
+    currentScreen: 'screen-splash',
     accounts: [],
     activeAccount: null,
     categories: [],
     channels: [],
     filteredChannels: [],
+    moviesCategories: [],
     movies: [],
+    filteredMovies: [],
+    seriesCategories: [],
     series: [],
     favorites: new Set(),
     history: [],
-    selectedCategoryIndex: -1,
-    currentPlayingIndex: -1,
-    currentChannel: null,
-    parentalPin: '0000',
-    preferredEngine: 'auto', // 'auto' | 'hls' | 'native' | 'mpegts'
-    language: 'ar',
     
-    // Playback Engine & Retry State
+    selectedCategoryIndex: -1,
+    currentChannel: null,
+    currentChannelIndex: -1,
+    
+    streamEngine: 'auto',
+    bufferProfile: 'medium',
+    language: 'ar',
+
+    // Playback Engine & Retry
     hlsPlayer: null,
     mpegtsPlayer: null,
     retryCount: 0,
     maxRetries: 3,
     retryTimer: null,
-    osdTimer: null,
-    wakeLockSentinel: null,
+    receiverBarTimer: null,
+    wakeLock: null,
 
-    // Numeric Channel Jump Buffer
-    numBuffer: '',
-    numTimer: null,
+    // Numerical Channel Jump (CH: 12 - )
+    chNumBuffer: '',
+    chNumTimer: null,
 
-    // Last focused element memory per screen
-    lastFocused: {}
+    // Spatial Navigation Memory
+    lastFocusedPerScreen: {}
   };
 
-  // =========================================================================
-  // DOM Cache
-  // =========================================================================
+  // DOM Elements Cache
   const dom = {};
 
-  // =========================================================================
-  // Lifecycle & Boot
-  // =========================================================================
   window.addEventListener('DOMContentLoaded', () => {
-    initDomCache();
-    initClock();
-    loadStoredData();
-    bindRemoteEvents();
-    bindNetworkListeners();
-    requestScreenWakeLock();
+    cacheDom();
+    initClockAndDate();
+    loadPersistentData();
+    bindRemoteControls();
+    bindSearchInputListeners();
+    requestWakeLock();
 
-    // Auto-login to active account if present
-    if (state.activeAccount) {
-      connectToAccount(state.activeAccount);
-    } else {
-      switchScreen('screen-portal');
-      renderSavedAccounts();
-    }
+    // 1. Exact Splash Screen Behavior (1.2s animation then route)
+    setTimeout(() => {
+      if (state.activeAccount) {
+        connectAccount(state.activeAccount);
+      } else {
+        switchScreen('screen-portal');
+      }
+    }, 1500);
   });
 
-  function initDomCache() {
+  function cacheDom() {
+    dom.screens = document.querySelectorAll('.screen');
+    dom.screenSplash = document.getElementById('screen-splash');
     dom.screenPortal = document.getElementById('screen-portal');
     dom.screenDashboard = document.getElementById('screen-dashboard');
+    dom.screenLivetv = document.getElementById('screen-livetv');
+    dom.screenVod = document.getElementById('screen-vod');
+    dom.screenFavorites = document.getElementById('screen-favorites');
+    dom.screenSettings = document.getElementById('screen-settings');
     dom.screenPlayer = document.getElementById('screen-player');
-    dom.portalStatus = document.getElementById('portal-status');
-    dom.savedAccountsSection = document.getElementById('saved-accounts-section');
-    dom.savedAccountsList = document.getElementById('saved-accounts-list');
-    dom.categoriesContainer = document.getElementById('categories-container');
-    dom.channelsGrid = document.getElementById('channels-grid');
-    dom.channelsViewport = document.getElementById('channels-viewport');
-    dom.activeCategoryTitle = document.getElementById('active-category-title');
-    dom.channelsCountBadge = document.getElementById('channels-count-badge');
-    dom.streamEngineBadge = document.getElementById('stream-engine-badge');
-    dom.globalSearchInput = document.getElementById('global-search-input');
-    dom.liveClock = document.getElementById('live-clock');
+
+    // Dashboard Elements
+    dom.dashLiveDate = document.getElementById('dash-live-date');
+    dom.dashLiveTime = document.getElementById('dash-live-time');
+    dom.dashProfileName = document.getElementById('dash-profile-name');
+    dom.dashPlaylistName = document.getElementById('dash-playlist-name');
+    dom.badgeLiveCount = document.getElementById('badge-live-count');
+    dom.badgeMoviesCount = document.getElementById('badge-movies-count');
+    dom.badgeSeriesCount = document.getElementById('badge-series-count');
+    dom.badgeFavCount = document.getElementById('badge-fav-count');
+    dom.dashMetaLive = document.getElementById('dash-meta-live');
+    dom.dashMetaMovies = document.getElementById('dash-meta-movies');
+    dom.dashMetaSeries = document.getElementById('dash-meta-series');
+
+    // Live TV Elements
+    dom.liveCategoriesList = document.getElementById('live-categories-list');
+    dom.liveChannelsGrid = document.getElementById('live-channels-grid');
+    dom.liveCurrentCategoryName = document.getElementById('live-current-category-name');
+    dom.liveChannelCountBadge = document.getElementById('live-channel-count-badge');
+    dom.liveCategorySearch = document.getElementById('live-category-search');
+    dom.liveChannelSearch = document.getElementById('live-channel-search');
+
+    // VOD Elements
+    dom.vodSidebarTitle = document.getElementById('vod-sidebar-title');
+    dom.vodCategoriesList = document.getElementById('vod-categories-list');
+    dom.vodCurrentCategoryName = document.getElementById('vod-current-category-name');
+    dom.vodCountBadge = document.getElementById('vod-count-badge');
+    dom.vodItemsGrid = document.getElementById('vod-items-grid');
 
     // Player Elements
     dom.videoElement = document.getElementById('video-element');
-    dom.playerSpinner = document.getElementById('player-spinner');
-    dom.playerErrorBanner = document.getElementById('player-error-banner');
-    dom.playerErrorMsg = document.getElementById('player-error-msg');
-    dom.retryCounterText = document.getElementById('retry-counter-text');
-    dom.playerOsd = document.getElementById('player-osd');
-    dom.osdChannelNum = document.getElementById('osd-channel-num');
-    dom.osdChannelName = document.getElementById('osd-channel-name');
-    dom.osdCategoryName = document.getElementById('osd-category-name');
-    dom.osdFavIcon = document.getElementById('osd-fav-icon');
-    dom.osdClock = document.getElementById('osd-clock');
-    dom.osdEngineBadge = document.getElementById('osd-engine-badge');
+    dom.playerLoadingSpinner = document.getElementById('player-loading-spinner');
+    dom.playerRetryBanner = document.getElementById('player-retry-banner');
+    dom.retryMainMsg = document.getElementById('retry-main-msg');
+    dom.retryCounterLbl = document.getElementById('retry-counter-lbl');
+    
+    // Receiver-style bottom bar
+    dom.playerReceiverBanner = document.getElementById('player-receiver-banner');
+    dom.recChannelNum = document.getElementById('rec-channel-num');
+    dom.recChannelName = document.getElementById('rec-channel-name');
+    dom.recProgramName = document.getElementById('rec-program-name');
+    dom.recResBadge = document.getElementById('rec-res-badge');
 
-    // Number jump
+    // Full OSD
+    dom.playerFullOsd = document.getElementById('player-full-osd');
+    dom.osdMediaTitle = document.getElementById('osd-media-title');
+    dom.osdCategorySub = document.getElementById('osd-category-sub');
+    dom.osdEngineLbl = document.getElementById('osd-engine-lbl');
+    dom.osdLiveClock = document.getElementById('osd-live-clock');
+
+    // Numerical Jump Box
     dom.numberJumpOsd = document.getElementById('number-jump-osd');
     dom.jumpDigits = document.getElementById('jump-digits');
-    dom.networkOfflineBanner = document.getElementById('network-offline-banner');
 
-    // Pin Modal
-    dom.modalPin = document.getElementById('modal-pin');
-    dom.modalPinInput = document.getElementById('modal-pin-input');
-    dom.pinModalError = document.getElementById('pin-modal-error');
+    // Modals
+    dom.modalXtreamLogin = document.getElementById('modal-xtream-login');
+    dom.modalM3uLoad = document.getElementById('modal-m3u-load');
+    dom.modalHelp = document.getElementById('modal-help');
+    dom.portalGlobalStatus = document.getElementById('portal-global-status');
   }
 
-  function initClock() {
+  function initClockAndDate() {
     const update = () => {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      if (dom.liveClock) dom.liveClock.textContent = timeStr;
-      if (dom.osdClock) dom.osdClock.textContent = timeStr;
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      if (dom.dashLiveTime) dom.dashLiveTime.textContent = timeStr;
+      if (dom.dashLiveDate) dom.dashLiveDate.textContent = dateStr;
+      if (dom.osdLiveClock) dom.osdLiveClock.textContent = timeStr;
     };
     update();
     setInterval(update, 1000);
   }
 
   // =========================================================================
-  // Safe Storage Management (No localStorage.clear())
+  // Storage Handling
   // =========================================================================
-  function loadStoredData() {
+  function loadPersistentData() {
     try {
-      const rawAccounts = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
-      state.accounts = rawAccounts ? JSON.parse(rawAccounts) : [];
+      const rawAcc = localStorage.getItem(STORAGE.ACCOUNTS);
+      state.accounts = rawAcc ? JSON.parse(rawAcc) : [];
 
-      const activeId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT);
+      const activeId = localStorage.getItem(STORAGE.ACTIVE_ACCOUNT);
       state.activeAccount = state.accounts.find(a => a.id === activeId) || null;
 
-      const rawFavs = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-      state.favorites = new Set(rawFavs ? JSON.parse(rawFavs) : []);
+      const rawFav = localStorage.getItem(STORAGE.FAVORITES);
+      state.favorites = new Set(rawFav ? JSON.parse(rawFav) : []);
 
-      const rawHistory = localStorage.getItem(STORAGE_KEYS.HISTORY);
-      state.history = rawHistory ? JSON.parse(rawHistory) : [];
+      const rawHist = localStorage.getItem(STORAGE.HISTORY);
+      state.history = rawHist ? JSON.parse(rawHist) : [];
 
-      state.parentalPin = localStorage.getItem(STORAGE_KEYS.PIN) || '0000';
-      state.preferredEngine = localStorage.getItem(STORAGE_KEYS.ENGINE) || 'auto';
-      state.language = localStorage.getItem(STORAGE_KEYS.LANG) || 'ar';
+      state.streamEngine = localStorage.getItem(STORAGE.ENGINE) || 'auto';
+      state.bufferProfile = localStorage.getItem(STORAGE.BUFFER) || 'medium';
+      state.language = localStorage.getItem(STORAGE.LANG) || 'ar';
     } catch (_) {}
   }
 
   function saveAccounts() {
-    localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(state.accounts));
+    localStorage.setItem(STORAGE.ACCOUNTS, JSON.stringify(state.accounts));
   }
 
   function saveFavorites() {
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Array.from(state.favorites)));
-  }
-
-  function saveHistory() {
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(state.history.slice(0, 30)));
+    localStorage.setItem(STORAGE.FAVORITES, JSON.stringify(Array.from(state.favorites)));
+    updateDashboardStats();
   }
 
   // =========================================================================
-  // Screen & Viewport Navigation
+  // Screen Switching & Navigation Memory
   // =========================================================================
   function switchScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    deactivateAllSearchInputs();
+    dom.screens.forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (!target) return;
     target.classList.add('active');
     state.currentScreen = screenId;
 
-    // Restore last focused element or pick first focusable
+    // Restore focus
     setTimeout(() => {
-      const last = state.lastFocused[screenId];
+      const last = state.lastFocusedPerScreen[screenId];
       if (last && document.body.contains(last) && last.offsetParent !== null) {
         last.focus();
       } else {
@@ -218,139 +241,51 @@
     }, 60);
   }
 
-  function switchNavTarget(targetId) {
-    state.activeNavTarget = targetId;
-    document.querySelectorAll('.nav-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.target === targetId);
-    });
-    document.querySelectorAll('.dash-view').forEach(v => {
-      v.classList.toggle('active', v.id === `section-${targetId}`);
-    });
-
-    if (targetId === 'favorites') {
-      renderFavoritesView();
-    } else if (targetId === 'history') {
-      renderHistoryView();
-    } else if (targetId === 'accounts') {
-      renderAccountsManagement();
-    }
-
-    setTimeout(() => {
-      const activeView = document.getElementById(`section-${targetId}`);
-      if (activeView) {
-        const first = activeView.querySelector('.focusable');
-        if (first) first.focus();
-      }
-    }, 50);
-  }
-
-  // =========================================================================
-  // Network Layer with Timeout & Retries (XMLHttpRequest)
-  // =========================================================================
-  function makeNetworkRequest(url, options = {}) {
-    const timeoutMs = options.timeout || 15000;
-    const maxRetries = options.retries !== undefined ? options.retries : 2;
-
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-
-      function execute() {
-        attempts++;
-        const xhr = new XMLHttpRequest();
-        xhr.open(options.method || 'GET', url, true);
-        xhr.timeout = timeoutMs;
-        if (options.responseType) xhr.responseType = options.responseType;
-
-        xhr.onload = function () {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response || xhr.responseText);
-          } else if (xhr.status === 401 || xhr.status === 403) {
-            reject(new Error('كلمة المرور أو اسم المستخدم غير صحيح، أو انتهت صلاحية الاشتراك'));
-          } else if (xhr.status === 404) {
-            reject(new Error('الرابط المطلوب غير موجود على السيرفر (404)'));
-          } else {
-            if (attempts <= maxRetries) {
-              setTimeout(execute, 1000 * attempts);
-            } else {
-              reject(new Error(`استجاب السيرفر برمز خطأ (${xhr.status})`));
-            }
-          }
-        };
-
-        xhr.ontimeout = function () {
-          if (attempts <= maxRetries) {
-            setTimeout(execute, 1500 * attempts);
-          } else {
-            reject(new Error('انتهت مهلة الاتصال بالسيرفر. تحقق من الرابط وسرعة الإنترنت'));
-          }
-        };
-
-        xhr.onerror = function () {
-          if (attempts <= maxRetries) {
-            setTimeout(execute, 1500 * attempts);
-          } else {
-            reject(new Error('تعذر الاتصال بالسيرفر (خطأ في الشبكة أو جدار الحماية CORS)'));
-          }
-        };
-
-        xhr.send(options.body || null);
-      }
-
-      execute();
-    });
-  }
-
   // =========================================================================
   // Account Connection (Xtream & M3U)
   // =========================================================================
-  async function connectToAccount(account) {
+  async function connectAccount(account) {
     state.activeAccount = account;
-    localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT, account.id);
-    showPortalStatus('جارٍ الاتصال بالسيرفر وتحميل البيانات...');
+    localStorage.setItem(STORAGE.ACTIVE_ACCOUNT, account.id);
+    if (dom.dashProfileName) dom.dashProfileName.textContent = account.name;
+    if (dom.dashPlaylistName) dom.dashPlaylistName.textContent = account.name;
 
+    showPortalStatus('جارٍ الاتصال بالسيرفر وتحميل الباقات...');
     try {
       if (account.type === 'xtream') {
-        await loadXtreamAccount(account);
+        await loadXtream(account);
       } else {
-        await loadM3uAccount(account);
+        await loadM3u(account);
       }
-      switchScreen('screen-dashboard');
       showPortalStatus('');
+      updateDashboardStats();
+      switchScreen('screen-dashboard');
     } catch (err) {
       showPortalStatus(err.message, true);
       switchScreen('screen-portal');
     }
   }
 
-  async function loadXtreamAccount(account) {
-    const { host, user, pass } = account;
-    // 1. Auth check
+  async function loadXtream(acc) {
+    const { host, user, pass } = acc;
+    // Auth & Info
     const authUrl = `${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
-    const authRes = await makeNetworkRequest(authUrl);
-    const authData = typeof authRes === 'string' ? JSON.parse(authRes) : authRes;
+    const authData = await fetchJson(authUrl);
 
     if (!authData || !authData.user_info || authData.user_info.auth === 0) {
       throw new Error('فشل تسجيل الدخول: اسم المستخدم أو كلمة المرور غير صحيحة');
     }
 
-    if (authData.user_info.status === 'Expired') {
-      throw new Error('اشتراكك على هذا السيرفر منتهي الصلاحية');
-    }
-
-    // 2. Fetch categories & channels in parallel
-    const catUrl = `${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_categories`;
-    const chUrl = `${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_streams`;
-
-    const [catRes, chRes] = await Promise.all([
-      makeNetworkRequest(catUrl),
-      makeNetworkRequest(chUrl)
+    // Parallel fetch: Live Categories, Live Streams, VOD Categories, VOD Streams, Series
+    const [liveCat, liveStreams, vodCat, vodStreams] = await Promise.all([
+      fetchJson(`${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_categories`).catch(() => []),
+      fetchJson(`${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_live_streams`).catch(() => []),
+      fetchJson(`${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_vod_categories`).catch(() => []),
+      fetchJson(`${host}/player_api.php?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}&action=get_vod_streams`).catch(() => [])
     ]);
 
-    const categories = typeof catRes === 'string' ? JSON.parse(catRes) : catRes;
-    const streams = typeof chRes === 'string' ? JSON.parse(chRes) : chRes;
-
-    state.categories = Array.isArray(categories) ? categories : [];
-    state.channels = (Array.isArray(streams) ? streams : []).map((ch, idx) => ({
+    state.categories = Array.isArray(liveCat) ? liveCat : [];
+    state.channels = (Array.isArray(liveStreams) ? liveStreams : []).map((ch, idx) => ({
       id: String(ch.stream_id),
       num: ch.num || (idx + 1),
       name: ch.name || `قناة ${idx + 1}`,
@@ -360,17 +295,23 @@
       url: `${host}/live/${user}/${pass}/${ch.stream_id}.m3u8`
     }));
 
-    renderCategories();
-    selectCategory(-1);
+    state.moviesCategories = Array.isArray(vodCat) ? vodCat : [];
+    state.movies = (Array.isArray(vodStreams) ? vodStreams : []).map(m => ({
+      id: String(m.stream_id),
+      name: m.name || 'فيلم',
+      categoryId: String(m.category_id),
+      rating: m.rating || '',
+      poster: m.stream_icon || '',
+      url: `${host}/movie/${user}/${pass}/${m.stream_id}.${m.container_extension || 'mp4'}`
+    }));
+
+    state.series = [];
+    buildLiveTvViews();
   }
 
-  async function loadM3uAccount(account) {
-    const content = await makeNetworkRequest(account.url);
-    parseM3u(content);
-  }
-
-  function parseM3u(content) {
-    const lines = content.split('\n');
+  async function loadM3u(acc) {
+    const raw = await fetchText(acc.url);
+    const lines = raw.split('\n');
     const channels = [];
     const catMap = new Map();
     let currentCh = null;
@@ -410,202 +351,289 @@
       category_name: name
     }));
     state.channels = channels;
+    state.movies = [];
+    state.series = [];
+    buildLiveTvViews();
+  }
 
-    renderCategories();
-    selectCategory(-1);
+  function fetchJson(url) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 16000;
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch (_) {
+            reject(new Error('استجابة غير صحيحة من السيرفر'));
+          }
+        } else {
+          reject(new Error(`خطأ في السيرفر (${xhr.status})`));
+        }
+      };
+      xhr.ontimeout = () => reject(new Error('انتهت مهلة الاتصال بالسيرفر'));
+      xhr.onerror = () => reject(new Error('تعذر الاتصال بالسيرفر (خطأ في الشبكة)'));
+      xhr.send();
+    });
+  }
+
+  function fetchText(url) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 25000;
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(xhr.responseText) : reject(new Error(`خطأ (${xhr.status})`));
+      xhr.ontimeout = () => reject(new Error('انتهت مهلة تحميل قائمة M3U'));
+      xhr.onerror = () => reject(new Error('فشل تحميل رابط M3U'));
+      xhr.send();
+    });
+  }
+
+  function updateDashboardStats() {
+    if (dom.badgeLiveCount) dom.badgeLiveCount.textContent = `${state.channels.length} Channels`;
+    if (dom.badgeMoviesCount) dom.badgeMoviesCount.textContent = `${state.movies.length} Movies`;
+    if (dom.badgeSeriesCount) dom.badgeSeriesCount.textContent = `${state.series.length} Series`;
+    if (dom.badgeFavCount) dom.badgeFavCount.textContent = `${state.favorites.size} Items`;
+
+    if (dom.dashMetaLive) dom.dashMetaLive.textContent = String(state.channels.length);
+    if (dom.dashMetaMovies) dom.dashMetaMovies.textContent = String(state.movies.length);
+    if (dom.dashMetaSeries) dom.dashMetaSeries.textContent = String(state.series.length);
   }
 
   // =========================================================================
-  // Virtualized Channel Viewport (Smooth 60fps Rendering)
+  // Live TV Screen (Exact match with LiveTvScreen.kt)
   // =========================================================================
-  function renderCategories() {
-    dom.categoriesContainer.innerHTML = '';
-
-    // "All Channels" Category
+  function buildLiveTvViews() {
+    // Categories List
+    dom.liveCategoriesList.innerHTML = '';
+    
+    // "All" item
     const allBtn = document.createElement('button');
-    allBtn.className = 'cat-btn focusable active';
-    allBtn.dataset.action = 'select-category';
+    allBtn.className = 'cat-item-btn focusable active';
+    allBtn.dataset.action = 'select-live-category';
     allBtn.dataset.index = '-1';
-    allBtn.innerHTML = `<span>🌟 جميع القنوات</span><span class="cat-badge">${state.channels.length}</span>`;
-    dom.categoriesContainer.appendChild(allBtn);
+    allBtn.innerHTML = `<span>جميع القنوات</span><span class="cat-count">${state.channels.length}</span>`;
+    dom.liveCategoriesList.appendChild(allBtn);
 
     state.categories.forEach((cat, idx) => {
       const count = state.channels.filter(c => c.categoryId === cat.category_id).length;
       const btn = document.createElement('button');
-      btn.className = 'cat-btn focusable';
-      btn.dataset.action = 'select-category';
+      btn.className = 'cat-item-btn focusable';
+      btn.dataset.action = 'select-live-category';
       btn.dataset.index = String(idx);
-      btn.innerHTML = `<span>${cat.category_name}</span><span class="cat-badge">${count}</span>`;
-      dom.categoriesContainer.appendChild(btn);
+      btn.innerHTML = `<span>${cat.category_name}</span><span class="cat-count">${count}</span>`;
+      dom.liveCategoriesList.appendChild(btn);
     });
+
+    selectLiveCategory(-1);
   }
 
-  function selectCategory(index) {
+  function selectLiveCategory(index) {
     state.selectedCategoryIndex = index;
-    document.querySelectorAll('.cat-btn').forEach(b => {
+    document.querySelectorAll('.cat-item-btn').forEach(b => {
       b.classList.toggle('active', parseInt(b.dataset.index, 10) === index);
     });
 
     if (index === -1) {
       state.filteredChannels = state.channels;
-      dom.activeCategoryTitle.textContent = '🌟 جميع القنوات';
+      dom.liveCurrentCategoryName.textContent = 'جميع القنوات';
     } else {
       const cat = state.categories[index];
       if (cat) {
         state.filteredChannels = state.channels.filter(c => c.categoryId === cat.category_id);
-        dom.activeCategoryTitle.textContent = cat.category_name;
+        dom.liveCurrentCategoryName.textContent = cat.category_name;
       }
     }
 
-    dom.channelsCountBadge.textContent = `${state.filteredChannels.length} قناة`;
-    renderChannelsGrid(state.filteredChannels);
+    dom.liveChannelCountBadge.textContent = `${state.filteredChannels.length} قناة`;
+    renderChannelsList(state.filteredChannels);
   }
 
-  function renderChannelsGrid(channelList) {
-    dom.channelsGrid.innerHTML = '';
+  function renderChannelsList(list) {
+    dom.liveChannelsGrid.innerHTML = '';
+    const slice = list.slice(0, 90); // Smooth rendering limit
 
-    // Chunk-based limit to prevent TV browser freeze (first 60 channels rendered)
-    const displayList = channelList.slice(0, 80);
-
-    displayList.forEach((ch, idx) => {
+    slice.forEach((ch, idx) => {
       const isFav = state.favorites.has(ch.id);
-      const card = document.createElement('button');
-      card.className = 'channel-card focusable';
-      card.dataset.action = 'play-channel';
-      card.dataset.id = ch.id;
-      card.dataset.index = String(idx);
+      const row = document.createElement('button');
+      row.className = 'ch-row-card focusable';
+      row.dataset.action = 'play-live-channel';
+      row.dataset.id = ch.id;
+      row.dataset.index = String(idx);
 
-      card.innerHTML = `
-        <span class="ch-number">${ch.num}</span>
-        <div class="ch-body">
-          <div class="ch-title">${ch.name}</div>
-          <div class="ch-epg">${ch.epgId ? 'دليل البرامج متاح' : 'بث مباشر'}</div>
-        </div>
-        ${isFav ? '<span class="ch-star">⭐</span>' : ''}
+      const starSvg = isFav ? `<span class="ch-fav-mark"><svg class="svg-icon-small" viewBox="0 0 24 24" fill="#FFD54F"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>` : '';
+
+      row.innerHTML = `
+        <span class="ch-num-badge">${String(ch.num).padStart(2, '0')}</span>
+        <span class="ch-name-txt">${ch.name}</span>
+        ${starSvg}
       `;
-      dom.channelsGrid.appendChild(card);
+      dom.liveChannelsGrid.appendChild(row);
     });
   }
 
   // =========================================================================
-  // Playback Engine (Hybrid HLS.js, mpegts.js & webOS Native Player)
+  // Controlled Search Inputs (No Keyboard on simple D-Pad Focus)
   // =========================================================================
-  function playChannelById(channelId) {
-    const ch = state.channels.find(c => c.id === channelId);
-    if (!ch) return;
+  function bindSearchInputListeners() {
+    if (dom.liveCategorySearch) {
+      dom.liveCategorySearch.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const items = dom.liveCategoriesList.querySelectorAll('.cat-item-btn');
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+      });
+    }
 
-    state.currentChannel = ch;
-    state.currentPlayingIndex = state.filteredChannels.findIndex(c => c.id === channelId);
-    switchScreen('screen-player');
-
-    // Add to history
-    state.history = [ch, ...state.history.filter(h => h.id !== ch.id)].slice(0, 30);
-    saveHistory();
-    localStorage.setItem(STORAGE_KEYS.LAST_CHANNEL, ch.id);
-
-    // Update OSD
-    dom.osdChannelNum.textContent = String(ch.num).padStart(2, '0');
-    dom.osdChannelName.textContent = ch.name;
-    dom.osdCategoryName.textContent = dom.activeCategoryTitle.textContent;
-    dom.osdFavIcon.classList.toggle('hidden', !state.favorites.has(ch.id));
-    showPlayerOsd();
-
-    state.retryCount = 0;
-    startStreamPlayback(ch.url);
+    if (dom.liveChannelSearch) {
+      dom.liveChannelSearch.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
+          selectLiveCategory(state.selectedCategoryIndex);
+          return;
+        }
+        const matches = state.channels.filter(c => 
+          c.name.toLowerCase().includes(query) || String(c.num) === query
+        );
+        dom.liveChannelCountBadge.textContent = `${matches.length} قناة`;
+        renderChannelsList(matches);
+      });
+    }
   }
 
-  function startStreamPlayback(url) {
-    cleanUpPlayback();
-    showSpinner(true);
-    hideErrorBanner();
+  function activateSearchInput(wrapper, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    wrapper.classList.add('typing');
+    input.removeAttribute('readonly');
+    input.focus();
+  }
+
+  function deactivateAllSearchInputs() {
+    document.querySelectorAll('.tv-search-wrapper, .modal-inp-wrapper').forEach(w => w.classList.remove('typing'));
+    document.querySelectorAll('.tv-clean-input, .modal-input').forEach(i => {
+      i.setAttribute('readonly', 'true');
+      i.blur();
+    });
+  }
+
+  // =========================================================================
+  // Playback Engine & Receiver-Style Bar (Exact Replica of TvPlayerScreen.kt)
+  // =========================================================================
+  function playChannel(channel) {
+    if (!channel) return;
+    state.currentChannel = channel;
+    state.currentChannelIndex = state.filteredChannels.findIndex(c => c.id === channel.id);
+    switchScreen('screen-player');
+
+    // Update Receiver Banner
+    dom.recChannelNum.textContent = String(channel.num).padStart(2, '0');
+    dom.recChannelName.textContent = channel.name;
+    dom.recProgramName.textContent = channel.epgId || 'البث الحي المباشر';
+
+    // Update Full OSD
+    dom.osdMediaTitle.textContent = channel.name;
+    dom.osdCategorySub.textContent = dom.liveCurrentCategoryName.textContent;
+
+    showReceiverBanner();
+
+    state.retryCount = 0;
+    launchStream(channel.url);
+  }
+
+  function showReceiverBanner() {
+    dom.playerReceiverBanner.classList.remove('hidden');
+    clearTimeout(state.receiverBarTimer);
+    state.receiverBarTimer = setTimeout(() => {
+      dom.playerReceiverBanner.classList.add('hidden');
+    }, 3500); // Exact 3.5s delay from Android
+  }
+
+  function toggleFullOsd() {
+    const isHidden = dom.playerFullOsd.classList.contains('hidden');
+    if (isHidden) {
+      dom.playerFullOsd.classList.remove('hidden');
+      setTimeout(() => dom.playerFullOsd.classList.add('hidden'), 5000);
+    } else {
+      dom.playerFullOsd.classList.add('hidden');
+    }
+  }
+
+  function launchStream(url) {
+    stopCurrentPlayback();
+    dom.playerLoadingSpinner.classList.remove('hidden');
+    dom.playerRetryBanner.classList.add('hidden');
 
     const video = dom.videoElement;
     const isM3u8 = url.includes('.m3u8');
-    const isTs = url.includes('.ts') || url.includes('/live/');
+    const isTs = url.includes('.ts');
 
-    // Strategy 1: Check Native webOS playback first for m3u8 if preferred
-    if (state.preferredEngine === 'native' || (state.preferredEngine === 'auto' && video.canPlayType('application/vnd.apple.mpegurl'))) {
-      dom.osdEngineBadge.textContent = 'NATIVE';
+    // 1. Native webOS video
+    if (state.streamEngine === 'native' || (state.streamEngine === 'auto' && video.canPlayType('application/vnd.apple.mpegurl'))) {
+      dom.osdEngineLbl.textContent = 'NATIVE';
       video.src = url;
-      video.play().then(() => showSpinner(false)).catch(handlePlaybackError);
+      video.play().then(() => dom.playerLoadingSpinner.classList.add('hidden')).catch(onPlaybackFailure);
       return;
     }
 
-    // Strategy 2: Hls.js for adaptive m3u8
+    // 2. Hls.js
     if (isM3u8 && window.Hls && Hls.isSupported()) {
-      dom.osdEngineBadge.textContent = 'HLS.JS';
-      state.hlsPlayer = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 60,
-        maxBufferSize: 30 * 1000 * 1000
-      });
-
+      dom.osdEngineLbl.textContent = 'HLS.JS';
+      state.hlsPlayer = new Hls({ enableWorker: true, lowLatencyMode: true });
       state.hlsPlayer.loadSource(url);
       state.hlsPlayer.attachMedia(video);
-
       state.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
-        showSpinner(false);
-        video.play().catch(handlePlaybackError);
+        dom.playerLoadingSpinner.classList.add('hidden');
+        video.play().catch(onPlaybackFailure);
       });
-
-      state.hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              state.hlsPlayer.startLoad();
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              state.hlsPlayer.recoverMediaError();
-              break;
-            default:
-              handlePlaybackError(new Error(data.details || 'فشل تشغيل HLS'));
-              break;
-          }
-        }
+      state.hlsPlayer.on(Hls.Events.ERROR, (e, data) => {
+        if (data.fatal) onPlaybackFailure(new Error(data.details));
       });
       return;
     }
 
-    // Strategy 3: mpegts.js for MPEG-TS streams
+    // 3. mpegts.js for TS
     if (isTs && window.mpegts && mpegts.isSupported()) {
-      dom.osdEngineBadge.textContent = 'MPEG-TS';
-      state.mpegtsPlayer = mpegts.createPlayer({
-        type: 'mse',
-        isLive: true,
-        url: url
-      });
+      dom.osdEngineLbl.textContent = 'MPEG-TS';
+      state.mpegtsPlayer = mpegts.createPlayer({ type: 'mse', isLive: true, url });
       state.mpegtsPlayer.attachMediaElement(video);
       state.mpegtsPlayer.load();
-      state.mpegtsPlayer.play().then(() => showSpinner(false)).catch(handlePlaybackError);
+      state.mpegtsPlayer.play().then(() => dom.playerLoadingSpinner.classList.add('hidden')).catch(onPlaybackFailure);
       return;
     }
 
-    // Default fallback to direct video element
-    dom.osdEngineBadge.textContent = 'DIRECT';
+    // Fallback
+    dom.osdEngineLbl.textContent = 'DIRECT';
     video.src = url;
-    video.play().then(() => showSpinner(false)).catch(handlePlaybackError);
+    video.play().then(() => dom.playerLoadingSpinner.classList.add('hidden')).catch(onPlaybackFailure);
   }
 
-  function handlePlaybackError(err) {
-    showSpinner(false);
+  function onPlaybackFailure(err) {
+    dom.playerLoadingSpinner.classList.add('hidden');
     state.retryCount++;
 
     if (state.retryCount <= state.maxRetries) {
-      showErrorBanner(`انقطع البث: (${err.message || 'خطأ في الشبكة'}). جارٍ إعادة المحاولة تلقائياً...`, state.retryCount);
-      const delay = Math.pow(2, state.retryCount - 1) * 1000;
+      dom.retryMainMsg.textContent = `انقطع البث: (${err.message || 'خطأ في الاتصال'}). جارٍ إعادة المحاولة...`;
+      dom.retryCounterLbl.textContent = `المحاولة ${state.retryCount} من ${state.maxRetries}`;
+      dom.playerRetryBanner.classList.remove('hidden');
+
+      const delayMs = Math.pow(2, state.retryCount - 1) * 1000;
       clearTimeout(state.retryTimer);
       state.retryTimer = setTimeout(() => {
         if (state.currentChannel && state.currentScreen === 'screen-player') {
-          startStreamPlayback(state.currentChannel.url);
+          launchStream(state.currentChannel.url);
         }
-      }, delay);
+      }, delayMs);
     } else {
-      showErrorBanner('تعذر تشغيل القناة بعد 3 محاولات. يرجى تجربة قناة أخرى أو مراجعة حالة السيرفر.', 3);
+      dom.retryMainMsg.textContent = 'تعذر تشغيل البث بعد 3 محاولات. يرجى تجربة قناة أخرى.';
     }
   }
 
-  function cleanUpPlayback() {
+  function stopCurrentPlayback() {
     clearTimeout(state.retryTimer);
     if (state.hlsPlayer) {
       state.hlsPlayer.destroy();
@@ -620,126 +648,106 @@
     dom.videoElement.load();
   }
 
-  function showSpinner(show) {
-    dom.playerSpinner.classList.toggle('hidden', !show);
-  }
-
-  function showErrorBanner(msg, retryNum) {
-    dom.playerErrorMsg.textContent = msg;
-    dom.retryCounterText.textContent = `المحاولة ${retryNum} من ${state.maxRetries}`;
-    dom.playerErrorBanner.classList.remove('hidden');
-  }
-
-  function hideErrorBanner() {
-    dom.playerErrorBanner.classList.add('hidden');
-  }
-
-  function showPlayerOsd() {
-    dom.playerOsd.classList.remove('hidden');
-    clearTimeout(state.osdTimer);
-    state.osdTimer = setTimeout(() => {
-      dom.playerOsd.classList.add('hidden');
-    }, 5000);
-  }
-
   // =========================================================================
   // Remote Controller Key Mapping & Spatial Navigation
   // =========================================================================
-  function bindRemoteEvents() {
-    window.addEventListener('keydown', handleKeyDown);
+  function bindRemoteControls() {
+    window.addEventListener('keydown', handleKey);
 
-    // Click handler for mouse pointer (Magic Remote)
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.focusable');
       if (btn) handleAction(btn);
     });
 
-    // Save focused element memory
     document.addEventListener('focusin', (e) => {
       if (e.target && e.target.classList.contains('focusable')) {
-        state.lastFocused[state.currentScreen] = e.target;
+        state.lastFocusedPerScreen[state.currentScreen] = e.target;
       }
     });
   }
 
-  function handleKeyDown(e) {
+  function handleKey(e) {
     const code = e.keyCode;
 
-    // 1. Direct Channel Numeric Jumping (0-9)
+    // Direct Channel Number Jump (0-9)
     if ((code >= 48 && code <= 57) || (code >= 96 && code <= 105)) {
+      // If actively typing inside an active search/form input, let typing happen!
+      if (document.activeElement && (document.activeElement.tagName === 'INPUT') && !document.activeElement.hasAttribute('readonly')) {
+        return;
+      }
       const digit = code >= 96 ? String(code - 96) : String(code - 48);
-      handleNumericJump(digit);
+      onDigitPressed(digit);
       return;
     }
 
-    // 2. Color Keys Handling (Red / Green / Yellow / Blue)
-    if (code === RC_KEYS.RED) {
+    // Color Keys
+    if (code === KEYS.RED) {
       e.preventDefault();
-      handleBackOrExit();
+      handleBackNavigation();
       return;
-    } else if (code === RC_KEYS.GREEN) {
+    } else if (code === KEYS.YELLOW) {
       e.preventDefault();
-      if (state.activeAccount) connectToAccount(state.activeAccount);
-      return;
-    } else if (code === RC_KEYS.YELLOW) {
-      e.preventDefault();
-      toggleCurrentFavorite();
-      return;
-    } else if (code === RC_KEYS.BLUE) {
-      e.preventDefault();
-      dom.globalSearchInput.focus();
+      toggleFavoriteCurrent();
       return;
     }
 
-    // 3. Channel +/- Keys (CH_UP / CH_DOWN)
-    if (code === RC_KEYS.CH_UP) {
+    // Channel +/- Keys (CH_UP / CH_DOWN)
+    if (code === KEYS.CH_UP) {
       e.preventDefault();
       stepChannel(-1);
       return;
-    } else if (code === RC_KEYS.CH_DOWN) {
+    } else if (code === KEYS.CH_DOWN) {
       e.preventDefault();
       stepChannel(1);
       return;
     }
 
-    // 4. Back Key Handling (webOS 461, Esc, Backspace)
-    if (code === RC_KEYS.BACK_WEBOS || code === RC_KEYS.BACK_ESC || code === RC_KEYS.BACKSPACE) {
-      // If focused inside input field, let backspace delete character unless empty
-      if (document.activeElement && document.activeElement.tagName === 'INPUT' && code === RC_KEYS.BACKSPACE) {
-        if (document.activeElement.value.length > 0) return;
+    // Back Key Handling (webOS 461, Esc, Backspace)
+    if (code === KEYS.BACK_WEBOS || code === KEYS.BACK_ESC || code === KEYS.BACKSPACE) {
+      // If currently typing in search input, first Back closes keyboard and deactivates input!
+      if (document.activeElement && document.activeElement.tagName === 'INPUT' && !document.activeElement.hasAttribute('readonly')) {
+        e.preventDefault();
+        deactivateAllSearchInputs();
+        return;
       }
       e.preventDefault();
-      handleBackOrExit();
+      handleBackNavigation();
       return;
     }
 
-    // 5. Fullscreen Player Controls
+    // Player Screen Controls
     if (state.currentScreen === 'screen-player') {
-      if (code === RC_KEYS.UP) {
+      if (code === KEYS.UP) {
         e.preventDefault();
         stepChannel(-1);
-      } else if (code === RC_KEYS.DOWN) {
+      } else if (code === KEYS.DOWN) {
         e.preventDefault();
         stepChannel(1);
-      } else if (code === RC_KEYS.ENTER) {
-        showPlayerOsd();
-      } else if (code === RC_KEYS.PLAY || code === RC_KEYS.PLAY_PAUSE) {
+      } else if (code === KEYS.ENTER) {
+        e.preventDefault();
+        showReceiverBanner();
+        toggleFullOsd();
+      } else if (code === KEYS.PLAY || code === KEYS.PLAY_PAUSE) {
         if (dom.videoElement.paused) dom.videoElement.play(); else dom.videoElement.pause();
-      } else if (code === RC_KEYS.PAUSE) {
-        dom.videoElement.pause();
       }
       return;
     }
 
-    // 6. Spatial D-Pad Navigation
-    if ([RC_KEYS.UP, RC_KEYS.DOWN, RC_KEYS.LEFT, RC_KEYS.RIGHT].includes(code)) {
+    // Spatial D-Pad Navigation
+    if ([KEYS.UP, KEYS.DOWN, KEYS.LEFT, KEYS.RIGHT].includes(code)) {
+      // If currently focused inside active input, up/down blurs and deactivates search
+      if (document.activeElement && document.activeElement.tagName === 'INPUT' && !document.activeElement.hasAttribute('readonly')) {
+        if (code === KEYS.UP || code === KEYS.DOWN) {
+          deactivateAllSearchInputs();
+        }
+      }
       e.preventDefault();
       navigateSpatial(code);
       return;
     }
 
-    // 7. Enter / OK
-    if (code === RC_KEYS.ENTER) {
+    // Enter / OK Key
+    if (code === KEYS.ENTER) {
       const active = document.activeElement;
       if (active && active.classList.contains('focusable')) {
         e.preventDefault();
@@ -748,21 +756,17 @@
     }
   }
 
-  function handleBackOrExit() {
+  function handleBackNavigation() {
+    closeAllModals();
+    deactivateAllSearchInputs();
+
     if (state.currentScreen === 'screen-player') {
-      cleanUpPlayback();
+      stopCurrentPlayback();
+      switchScreen('screen-livetv');
+    } else if (state.currentScreen === 'screen-livetv' || state.currentScreen === 'screen-vod' || state.currentScreen === 'screen-favorites' || state.currentScreen === 'screen-settings') {
       switchScreen('screen-dashboard');
     } else if (state.currentScreen === 'screen-dashboard') {
-      if (state.activeNavTarget !== 'live') {
-        switchNavTarget('live');
-      } else {
-        // Exit to portal or system platformBack
-        if (window.webOS && window.webOS.platformBack) {
-          window.webOS.platformBack();
-        } else {
-          switchScreen('screen-portal');
-        }
-      }
+      switchScreen('screen-portal');
     } else if (state.currentScreen === 'screen-portal') {
       if (window.webOS && window.webOS.platformBack) {
         window.webOS.platformBack();
@@ -774,41 +778,38 @@
 
   function stepChannel(offset) {
     if (!state.filteredChannels.length) return;
-    let nextIdx = state.currentPlayingIndex + offset;
-    if (nextIdx < 0) nextIdx = state.filteredChannels.length - 1;
-    if (nextIdx >= state.filteredChannels.length) nextIdx = 0;
-    playChannelById(state.filteredChannels[nextIdx].id);
+    let next = state.currentChannelIndex + offset;
+    if (next < 0) next = state.filteredChannels.length - 1;
+    if (next >= state.filteredChannels.length) next = 0;
+    playChannel(state.filteredChannels[next]);
   }
 
-  function handleNumericJump(digit) {
-    state.numBuffer += digit;
-    dom.jumpDigits.textContent = state.numBuffer;
+  function onDigitPressed(digit) {
+    state.chNumBuffer += digit;
+    dom.jumpDigits.textContent = state.chNumBuffer;
     dom.numberJumpOsd.classList.remove('hidden');
 
-    clearTimeout(state.numTimer);
-    state.numTimer = setTimeout(() => {
-      const targetNum = parseInt(state.numBuffer, 10);
+    clearTimeout(state.chNumTimer);
+    state.chNumTimer = setTimeout(() => {
+      const target = parseInt(state.chNumBuffer, 10);
       dom.numberJumpOsd.classList.add('hidden');
-      state.numBuffer = '';
+      state.chNumBuffer = '';
 
-      const targetCh = state.channels.find(c => c.num === targetNum);
-      if (targetCh) {
-        playChannelById(targetCh.id);
-      }
-    }, 1800);
+      const match = state.channels.find(c => c.num === target);
+      if (match) playChannel(match);
+    }, 1500);
   }
 
-  function toggleCurrentFavorite() {
+  function toggleFavoriteCurrent() {
     if (!state.currentChannel) return;
-    const chId = state.currentChannel.id;
-    if (state.favorites.has(chId)) {
-      state.favorites.delete(chId);
-      dom.osdFavIcon.classList.add('hidden');
+    const id = state.currentChannel.id;
+    if (state.favorites.has(id)) {
+      state.favorites.delete(id);
     } else {
-      state.favorites.add(chId);
-      dom.osdFavIcon.classList.remove('hidden');
+      state.favorites.add(id);
     }
     saveFavorites();
+    showReceiverBanner();
   }
 
   function navigateSpatial(keyCode) {
@@ -830,10 +831,10 @@
       const tRect = t.getBoundingClientRect();
       let match = false;
 
-      if (keyCode === RC_KEYS.RIGHT && tRect.left > cRect.left - 5) match = true;
-      if (keyCode === RC_KEYS.LEFT && tRect.right < cRect.right + 5) match = true;
-      if (keyCode === RC_KEYS.DOWN && tRect.top > cRect.top - 5) match = true;
-      if (keyCode === RC_KEYS.UP && tRect.bottom < cRect.bottom + 5) match = true;
+      if (keyCode === KEYS.RIGHT && tRect.left > cRect.left - 5) match = true;
+      if (keyCode === KEYS.LEFT && tRect.right < cRect.right + 5) match = true;
+      if (keyCode === KEYS.DOWN && tRect.top > cRect.top - 5) match = true;
+      if (keyCode === KEYS.UP && tRect.bottom < cRect.bottom + 5) match = true;
 
       if (match) {
         const dx = (tRect.left + tRect.width / 2) - (cRect.left + cRect.width / 2);
@@ -853,237 +854,197 @@
   }
 
   // =========================================================================
-  // Action Dispatcher
+  // Action Dispatcher (Strict Click/OK trigger only)
   // =========================================================================
-  function handleAction(element) {
-    const action = element.dataset.action;
+  function handleAction(el) {
+    const act = el.dataset.action;
 
-    if (action === 'portal-tab') {
-      const tab = element.dataset.tab;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      element.classList.add('active');
-      document.querySelectorAll('.tab-form').forEach(f => f.classList.remove('active'));
-      document.getElementById(`form-${tab}`).classList.add('active');
-    } else if (action === 'toggle-pass') {
-      const passInp = document.getElementById('xtream-pass');
-      passInp.type = passInp.type === 'password' ? 'text' : 'password';
-    } else if (action === 'login-xtream') {
-      submitXtreamLogin();
-    } else if (action === 'login-m3u') {
-      submitM3uLogin();
-    } else if (action === 'switch-nav') {
-      switchNavTarget(element.dataset.target);
-    } else if (action === 'select-category') {
-      selectCategory(parseInt(element.dataset.index, 10));
-    } else if (action === 'play-channel') {
-      playChannelById(element.dataset.id);
-    } else if (action === 'add-new-account') {
+    if (act === 'portal-go-dashboard') {
+      if (state.activeAccount) switchScreen('screen-dashboard');
+    } else if (act === 'open-xtream-modal') {
+      openModal(dom.modalXtreamLogin);
+    } else if (act === 'open-m3u-modal') {
+      openModal(dom.modalM3uLoad);
+    } else if (act === 'open-help-modal') {
+      openModal(dom.modalHelp);
+    } else if (act === 'close-modals') {
+      closeAllModals();
+    } else if (act === 'activate-search-cat') {
+      activateSearchInput(el, 'live-category-search');
+    } else if (act === 'activate-search-ch') {
+      activateSearchInput(el, 'live-channel-search');
+    } else if (act === 'focus-input') {
+      activateSearchInput(el, el.dataset.target);
+    } else if (act === 'do-xtream-login') {
+      executeXtreamLogin();
+    } else if (act === 'do-m3u-login') {
+      executeM3uLogin();
+    } else if (act === 'open-livetv') {
+      switchScreen('screen-livetv');
+    } else if (act === 'open-movies') {
+      openMoviesView();
+    } else if (act === 'open-series') {
+      openSeriesView();
+    } else if (act === 'open-favorites') {
+      openFavoritesView();
+    } else if (act === 'open-settings') {
+      switchScreen('screen-settings');
+    } else if (act === 'open-portal') {
       switchScreen('screen-portal');
-    } else if (action === 'clear-history') {
-      state.history = [];
-      saveHistory();
-      renderHistoryView();
-    } else if (action === 'set-engine') {
-      state.preferredEngine = element.dataset.engine;
-      localStorage.setItem(STORAGE_KEYS.ENGINE, state.preferredEngine);
-      document.querySelectorAll('[data-action="set-engine"]').forEach(b => {
-        b.classList.toggle('active', b.dataset.engine === state.preferredEngine);
-      });
-    } else if (action === 'clear-app-cache') {
-      localStorage.removeItem(STORAGE_KEYS.FAVORITES);
-      localStorage.removeItem(STORAGE_KEYS.HISTORY);
+    } else if (act === 'live-go-back' || act === 'vod-go-back' || act === 'fav-go-back' || act === 'settings-go-back') {
+      switchScreen('screen-dashboard');
+    } else if (act === 'select-live-category') {
+      selectLiveCategory(parseInt(el.dataset.index, 10));
+    } else if (act === 'play-live-channel') {
+      const ch = state.filteredChannels[parseInt(el.dataset.index, 10)];
+      if (ch) playChannel(ch);
+    } else if (act === 'player-exit') {
+      stopCurrentPlayback();
+      switchScreen('screen-livetv');
+    } else if (act === 'cfg-engine') {
+      state.streamEngine = el.dataset.val;
+      localStorage.setItem(STORAGE.ENGINE, state.streamEngine);
+      document.querySelectorAll('[data-action="cfg-engine"]').forEach(b => b.classList.toggle('active', b.dataset.val === state.streamEngine));
+    } else if (act === 'clear-app-cache') {
+      localStorage.removeItem(STORAGE.FAVORITES);
       state.favorites.clear();
-      state.history = [];
+      updateDashboardStats();
       alert('تم مسح كاش القنوات والمفضلة بنجاح');
-    } else if (action === 'logout-current') {
+    } else if (act === 'logout-active-account') {
       state.activeAccount = null;
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_ACCOUNT);
+      localStorage.removeItem(STORAGE.ACTIVE_ACCOUNT);
       switchScreen('screen-portal');
-      renderSavedAccounts();
     }
   }
 
-  // =========================================================================
-  // Form Submissions
-  // =========================================================================
-  function submitXtreamLogin() {
-    let host = document.getElementById('xtream-host').value.trim();
-    const user = document.getElementById('xtream-user').value.trim();
-    const pass = document.getElementById('xtream-pass').value.trim();
-    const label = document.getElementById('xtream-label').value.trim() || user;
+  function executeXtreamLogin() {
+    const name = document.getElementById('xtream-inp-name').value.trim() || 'سيرفر البيت';
+    let host = document.getElementById('xtream-inp-host').value.trim();
+    const user = document.getElementById('xtream-inp-user').value.trim();
+    const pass = document.getElementById('xtream-inp-pass').value.trim();
 
     if (!host || !user || !pass) {
-      showPortalStatus('يرجى ملء جميع الحقول المطلوبة', true);
+      showModalStatus(document.getElementById('xtream-modal-status'), 'يرجى ملء جميع الحقول المطلوبة');
       return;
     }
 
     if (!host.startsWith('http://') && !host.startsWith('https://')) host = 'http://' + host;
     if (host.endsWith('/')) host = host.slice(0, -1);
 
-    const account = {
-      id: 'acc_' + Date.now(),
-      type: 'xtream',
-      name: label,
-      host,
-      user,
-      pass
-    };
-
-    saveNewAccount(account);
-    connectToAccount(account);
+    const account = { id: 'acc_' + Date.now(), type: 'xtream', name, host, user, pass };
+    state.accounts = [account, ...state.accounts.filter(a => a.id !== account.id)];
+    saveAccounts();
+    closeAllModals();
+    connectAccount(account);
   }
 
-  function submitM3uLogin() {
-    const url = document.getElementById('m3u-url').value.trim();
-    const label = document.getElementById('m3u-label').value.trim() || 'قائمة M3U';
+  function executeM3uLogin() {
+    const name = document.getElementById('m3u-inp-name').value.trim() || 'قائمة M3U';
+    const url = document.getElementById('m3u-inp-url').value.trim();
 
     if (!url) {
-      showPortalStatus('يرجى إدخال رابط ملف M3U', true);
+      showModalStatus(document.getElementById('m3u-modal-status'), 'يرجى كتابة رابط قائمة M3U');
       return;
     }
 
-    const account = {
-      id: 'acc_' + Date.now(),
-      type: 'm3u',
-      name: label,
-      url
-    };
-
-    saveNewAccount(account);
-    connectToAccount(account);
-  }
-
-  function saveNewAccount(acc) {
-    state.accounts = [acc, ...state.accounts.filter(a => a.id !== acc.id)];
+    const account = { id: 'acc_' + Date.now(), type: 'm3u', name, url };
+    state.accounts = [account, ...state.accounts.filter(a => a.id !== account.id)];
     saveAccounts();
+    closeAllModals();
+    connectAccount(account);
   }
 
-  function renderSavedAccounts() {
-    if (!state.accounts.length) {
-      dom.savedAccountsSection.classList.add('hidden');
-      return;
-    }
-    dom.savedAccountsSection.classList.remove('hidden');
-    dom.savedAccountsList.innerHTML = '';
+  function openMoviesView() {
+    dom.vodSidebarTitle.textContent = 'تصنيفات الأفلام';
+    dom.vodCurrentCategoryName.textContent = 'الأفلام';
+    dom.vodCountBadge.textContent = `${state.movies.length} فيلم`;
+    dom.vodCategoriesList.innerHTML = '';
 
-    state.accounts.forEach(acc => {
-      const btn = document.createElement('button');
-      btn.className = 'btn-sub focusable';
-      btn.textContent = `📺 ${acc.name} (${acc.type.toUpperCase()})`;
-      btn.onclick = () => connectToAccount(acc);
-      dom.savedAccountsList.appendChild(btn);
+    const allBtn = document.createElement('button');
+    allBtn.className = 'cat-item-btn focusable active';
+    allBtn.textContent = 'جميع الأفلام';
+    dom.vodCategoriesList.appendChild(allBtn);
+
+    dom.vodItemsGrid.innerHTML = '';
+    state.movies.slice(0, 50).forEach(m => {
+      const card = document.createElement('button');
+      card.className = 'vod-item-card focusable';
+      card.innerHTML = `
+        <img src="${m.poster || 'icon.png'}" class="vod-thumb" alt="${m.name}">
+        <div class="vod-meta"><div class="vod-name">${m.name}</div></div>
+      `;
+      card.onclick = () => playChannel({ id: m.id, num: 1, name: m.name, url: m.url });
+      dom.vodItemsGrid.appendChild(card);
     });
+
+    switchScreen('screen-vod');
   }
 
-  function renderFavoritesView() {
-    const favGrid = document.getElementById('favorites-grid');
-    const emptyMsg = document.getElementById('favorites-empty-msg');
-    const badge = document.getElementById('favorites-count-badge');
+  function openSeriesView() {
+    dom.vodSidebarTitle.textContent = 'تصنيفات المسلسلات';
+    dom.vodCurrentCategoryName.textContent = 'المسلسلات';
+    dom.vodCountBadge.textContent = '0 مسلسل';
+    dom.vodCategoriesList.innerHTML = '';
+    dom.vodItemsGrid.innerHTML = '';
+    switchScreen('screen-vod');
+  }
+
+  function openFavoritesView() {
+    const grid = document.getElementById('fav-channels-grid');
+    const empty = document.getElementById('fav-empty-msg');
+    const pill = document.getElementById('fav-count-pill');
     const favChannels = state.channels.filter(c => state.favorites.has(c.id));
 
-    badge.textContent = `${favChannels.length} قناة`;
-    emptyMsg.classList.toggle('hidden', favChannels.length > 0);
-    favGrid.innerHTML = '';
+    pill.textContent = `${favChannels.length} قناة`;
+    empty.classList.toggle('hidden', favChannels.length > 0);
+    grid.innerHTML = '';
 
     favChannels.forEach((ch, idx) => {
-      const card = document.createElement('button');
-      card.className = 'channel-card focusable';
-      card.dataset.action = 'play-channel';
-      card.dataset.id = ch.id;
-      card.innerHTML = `
-        <span class="ch-number">${ch.num}</span>
-        <div class="ch-body">
-          <div class="ch-title">${ch.name}</div>
-          <div class="ch-epg">قناة مفضلة</div>
-        </div>
-        <span class="ch-star">⭐</span>
+      const row = document.createElement('button');
+      row.className = 'ch-row-card focusable';
+      row.dataset.action = 'play-live-channel';
+      row.dataset.index = String(idx);
+      row.innerHTML = `
+        <span class="ch-num-badge">${String(ch.num).padStart(2, '0')}</span>
+        <span class="ch-name-txt">${ch.name}</span>
+        <span class="ch-fav-mark"><svg class="svg-icon-small" viewBox="0 0 24 24" fill="#FFD54F"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
       `;
-      favGrid.appendChild(card);
+      row.onclick = () => playChannel(ch);
+      grid.appendChild(row);
     });
+
+    switchScreen('screen-favorites');
   }
 
-  function renderHistoryView() {
-    const histGrid = document.getElementById('history-grid');
-    const emptyMsg = document.getElementById('history-empty-msg');
-    emptyMsg.classList.toggle('hidden', state.history.length > 0);
-    histGrid.innerHTML = '';
-
-    state.history.forEach((ch, idx) => {
-      const card = document.createElement('button');
-      card.className = 'channel-card focusable';
-      card.dataset.action = 'play-channel';
-      card.dataset.id = ch.id;
-      card.innerHTML = `
-        <span class="ch-number">${ch.num}</span>
-        <div class="ch-body">
-          <div class="ch-title">${ch.name}</div>
-          <div class="ch-epg">شوهدت مؤخراً</div>
-        </div>
-      `;
-      histGrid.appendChild(card);
-    });
+  function openModal(modal) {
+    closeAllModals();
+    if (modal) {
+      modal.classList.remove('hidden');
+      const firstFocusable = modal.querySelector('.focusable');
+      if (firstFocusable) firstFocusable.focus();
+    }
   }
 
-  function renderAccountsManagement() {
-    const list = document.getElementById('accounts-management-list');
-    list.innerHTML = '';
-
-    state.accounts.forEach(acc => {
-      const isCur = state.activeAccount && state.activeAccount.id === acc.id;
-      const box = document.createElement('div');
-      box.className = `account-box ${isCur ? 'active' : ''}`;
-      box.innerHTML = `
-        <h3>${acc.name}</h3>
-        <p class="setting-hint">${acc.type === 'xtream' ? acc.host : acc.url}</p>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <button class="btn-main-action focusable" style="height:48px;font-size:18px;" onclick="window.mluonaSwitchAccount('${acc.id}')">
-            ${isCur ? '✓ الحساب النشط' : 'تبديل لهذا الحساب'}
-          </button>
-          <button class="btn-danger focusable" style="padding:10px;" onclick="window.mluonaDeleteAccount('${acc.id}')">حذف</button>
-        </div>
-      `;
-      list.appendChild(box);
-    });
+  function closeAllModals() {
+    deactivateAllSearchInputs();
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
   }
 
-  window.mluonaSwitchAccount = function (accId) {
-    const target = state.accounts.find(a => a.id === accId);
-    if (target) connectToAccount(target);
-  };
-
-  window.mluonaDeleteAccount = function (accId) {
-    state.accounts = state.accounts.filter(a => a.id !== accId);
-    saveAccounts();
-    renderAccountsManagement();
-  };
+  function showModalStatus(el, msg) {
+    if (el) el.textContent = msg;
+  }
 
   function showPortalStatus(msg, isErr = false) {
-    if (!dom.portalStatus) return;
-    dom.portalStatus.textContent = msg;
-    dom.portalStatus.style.color = isErr ? '#FF5252' : '#FFD54F';
+    if (dom.portalGlobalStatus) {
+      dom.portalGlobalStatus.textContent = msg;
+      dom.portalGlobalStatus.style.color = isErr ? '#FF5252' : '#FFD54F';
+    }
   }
 
-  // =========================================================================
-  // Screen Wake Lock & Network Auto-Recovery
-  // =========================================================================
-  async function requestScreenWakeLock() {
+  async function requestWakeLock() {
     try {
-      if ('wakeLock' in navigator) {
-        state.wakeLockSentinel = await navigator.wakeLock.request('screen');
-      }
+      if ('wakeLock' in navigator) state.wakeLock = await navigator.wakeLock.request('screen');
     } catch (_) {}
-  }
-
-  function bindNetworkListeners() {
-    window.addEventListener('offline', () => {
-      dom.networkOfflineBanner.classList.remove('hidden');
-    });
-    window.addEventListener('online', () => {
-      dom.networkOfflineBanner.classList.add('hidden');
-      if (state.currentScreen === 'screen-player' && state.currentChannel) {
-        startStreamPlayback(state.currentChannel.url);
-      }
-    });
   }
 
 })();
