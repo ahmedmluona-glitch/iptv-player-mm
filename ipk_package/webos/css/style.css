@@ -1,0 +1,476 @@
+/* =========================================================
+   Mluona IPTV - Smart TV Style Sheet (1920x1080 Full HD)
+   Emerald Green Theme with Remote Control Focus Navigation
+   ========================================================= */
+
+:root {
+  --bg-dark: #050B08;
+  --surface-dark: #0B1711;
+  --surface-card: #0F2219;
+  --accent-neon: #00E676;
+  --accent-hover: #00C853;
+  --accent-gold: #FFD54F;
+  --border-color: #173627;
+  --text-primary: #FFFFFF;
+  --text-secondary: #90A4AE;
+  --text-muted: #546E7A;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+}
+
+.tv-glow {
+  position: fixed;
+  top: -100px;
+  left: 20%;
+  width: 60%;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Screen Management */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* =========================================
+   Focus Styles (TV Remote Navigation)
+   ========================================= */
+.focusable {
+  outline: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.focusable:focus,
+.focusable.focused {
+  transform: scale(1.03);
+  outline: 3px solid var(--accent-neon) !important;
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.5) !important;
+  border-color: var(--accent-neon) !important;
+  z-index: 20;
+}
+
+/* =========================================
+   Screen 1: Portal Screen
+   ========================================= */
+#screen-portal {
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, #0B1B13 0%, var(--bg-dark) 80%);
+}
+
+.portal-card {
+  width: 760px;
+  background: var(--surface-dark);
+  border: 1.5px solid var(--border-color);
+  border-radius: 28px;
+  padding: 44px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.brand-logo-icon {
+  font-size: 48px;
+}
+
+.brand-title {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.neon-text {
+  color: var(--accent-neon);
+}
+
+.white-text {
+  color: #FFFFFF;
+}
+
+.portal-subtitle {
+  color: var(--text-secondary);
+  font-size: 18px;
+  margin-bottom: 28px;
+}
+
+.portal-tabs {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.portal-tabs button {
+  flex: 1;
+  padding: 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.portal-tabs button.active {
+  background: rgba(0, 230, 118, 0.15);
+  border-color: var(--accent-neon);
+  color: var(--accent-neon);
+}
+
+.tab-form {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tab-form.active {
+  display: flex;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: right;
+  width: 100%;
+}
+
+.input-group label {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 16px 20px;
+  background: #06110B;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-size: 18px;
+  direction: ltr;
+  text-align: left;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, var(--accent-neon), var(--accent-hover));
+  color: #000000;
+  border: none;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 10px;
+}
+
+.status-msg {
+  margin-top: 16px;
+  font-size: 15px;
+  color: var(--accent-gold);
+  min-height: 24px;
+}
+
+/* =========================================
+   Screen 2: Dashboard
+   ========================================= */
+#screen-dashboard {
+  flex-direction: column;
+}
+
+.top-nav {
+  height: 90px;
+  background: var(--surface-dark);
+  border-bottom: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+}
+
+.nav-brand {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-btn {
+  padding: 12px 28px;
+  background: transparent;
+  border: 1.2px solid transparent;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.nav-btn.active {
+  background: rgba(0, 230, 118, 0.15);
+  border-color: var(--accent-neon);
+  color: var(--accent-neon);
+}
+
+.clock-display {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.dashboard-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding: 24px 48px;
+}
+
+.dash-section {
+  display: none;
+  width: 100%;
+  height: 100%;
+  gap: 28px;
+}
+
+.dash-section.active {
+  display: flex;
+}
+
+.categories-panel {
+  width: 380px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.panel-title {
+  font-size: 20px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.scroll-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 6px;
+}
+
+.scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.cat-item {
+  padding: 14px 18px;
+  background: var(--surface-card);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 17px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.cat-item.active {
+  background: rgba(0, 230, 118, 0.2);
+  border-color: var(--accent-neon);
+  color: var(--accent-neon);
+  font-weight: 800;
+}
+
+.channels-panel {
+  flex: 1;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+}
+
+.channels-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.neon-badge {
+  background: rgba(0, 230, 118, 0.2);
+  color: var(--accent-neon);
+  border: 1px solid var(--accent-neon);
+}
+
+.channels-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 110px;
+  gap: 14px;
+  padding-left: 6px;
+}
+
+.channel-card {
+  background: var(--surface-card);
+  border: 1.2px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: right;
+}
+
+.ch-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--accent-neon);
+  min-width: 32px;
+}
+
+.ch-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   Screen 3: Fullscreen Player & OSD
+   ========================================= */
+#screen-player {
+  background: #000000;
+}
+
+.fullscreen-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.player-osd {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 60%, transparent 100%);
+  padding: 40px 60px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: opacity 0.3s ease;
+}
+
+.player-osd.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.osd-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.osd-channel-num {
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--accent-neon);
+}
+
+.osd-info {
+  flex: 1;
+}
+
+.osd-info h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.osd-info p {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.osd-badges {
+  display: flex;
+  gap: 10px;
+}
+
+.osd-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}

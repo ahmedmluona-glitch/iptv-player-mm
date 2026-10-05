@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mluona IPTV - Smart TV</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+  <!-- Background Noise & Glow -->
+  <div class="tv-glow"></div>
+
+  <!-- Screen 1: Portal / Login Screen -->
+  <div id="screen-portal" class="screen active">
+    <div class="portal-card">
+      <div class="brand-header">
+        <div class="brand-logo-icon">📺</div>
+        <div class="brand-title">
+          <span class="neon-text">MLUONA</span>
+          <span class="white-text">IPTV</span>
+        </div>
+      </div>
+      <p class="portal-subtitle">اختر طريقة توصيل قائمة القنوات الخاصة بك</p>
+
+      <div class="portal-tabs">
+        <button id="tab-xtream" class="focusable active" data-action="select-tab" data-tab="xtream">
+          <span class="tab-icon">⚡</span>
+          <span>Xtream Codes API</span>
+        </button>
+        <button id="tab-m3u" class="focusable" data-action="select-tab" data-tab="m3u">
+          <span class="tab-icon">📋</span>
+          <span>قائمة تشغيل M3U</span>
+        </button>
+      </div>
+
+      <!-- Xtream Form -->
+      <div id="form-xtream" class="tab-form active">
+        <div class="input-group">
+          <label>رابط السيرفر (Server URL)</label>
+          <input type="text" id="xtream-host" class="focusable" placeholder="http://example.com:8080" value="">
+        </div>
+        <div class="input-group">
+          <label>اسم المستخدم (Username)</label>
+          <input type="text" id="xtream-user" class="focusable" placeholder="اسم المستخدم" value="">
+        </div>
+        <div class="input-group">
+          <label>كلمة المرور (Password)</label>
+          <input type="password" id="xtream-pass" class="focusable" placeholder="كلمة المرور" value="">
+        </div>
+        <button id="btn-login-xtream" class="btn-primary focusable" data-action="login-xtream">
+          <span>دخول فوري وتشغيل القنوات</span>
+        </button>
+      </div>
+
+      <!-- M3U Form -->
+      <div id="form-m3u" class="tab-form">
+        <div class="input-group">
+          <label>رابط قائمة التشغيل M3U (Playlist URL)</label>
+          <input type="text" id="m3u-url" class="focusable" placeholder="http://example.com/playlist.m3u" value="">
+        </div>
+        <button id="btn-login-m3u" class="btn-primary focusable" data-action="login-m3u">
+          <span>تحميل قائمة M3U</span>
+        </button>
+      </div>
+
+      <div id="portal-status" class="status-msg"></div>
+    </div>
+  </div>
+
+  <!-- Screen 2: Dashboard -->
+  <div id="screen-dashboard" class="screen">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <span class="neon-text">MLUONA</span>
+        <span class="white-text">IPTV</span>
+      </div>
+      <div class="nav-links">
+        <button class="nav-btn focusable active" data-action="switch-nav" data-target="live">
+          <span>🔴 بث حي مباشر</span>
+        </button>
+        <button class="nav-btn focusable" data-action="switch-nav" data-target="vod">
+          <span>🎬 أفلام ومسلسلات</span>
+        </button>
+        <button class="nav-btn focusable" data-action="switch-nav" data-target="settings">
+          <span>⚙️ الإعدادات</span>
+        </button>
+      </div>
+      <div class="clock-display" id="clock-display">00:00</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-body">
+      <!-- Live TV Section -->
+      <section id="section-live" class="dash-section active">
+        <!-- Categories Column -->
+        <div class="categories-panel">
+          <h3 class="panel-title">الباقات والفئات</h3>
+          <div id="categories-list" class="scroll-list"></div>
+        </div>
+
+        <!-- Channels Column -->
+        <div class="channels-panel">
+          <div class="channels-header">
+            <h3 id="current-category-title" class="panel-title">جميع القنوات</h3>
+            <span id="channels-count" class="badge">0 قناة</span>
+          </div>
+          <div id="channels-grid" class="channels-grid"></div>
+        </div>
+      </section>
+
+      <!-- VOD Section -->
+      <section id="section-vod" class="dash-section">
+        <div class="vod-placeholder">
+          <h3>قسم مكتبة الأفلام والمسلسلات (VOD)</h3>
+          <p>يمكنك التبديل للبث المباشر أو تصفح القنوات المتاحة</p>
+        </div>
+      </section>
+
+      <!-- Settings Section -->
+      <section id="section-settings" class="dash-section">
+        <div class="settings-card">
+          <h3>إعدادات المشغل والتطبيق</h3>
+          <div class="settings-row">
+            <span>الحساب الحالي:</span>
+            <strong id="active-account-name" class="neon-text">--</strong>
+          </div>
+          <div class="settings-actions">
+            <button class="btn-danger focusable" data-action="logout">
+              <span>تسجيل الخروج وتبديل السيرفر</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Screen 3: Fullscreen Video Player -->
+  <div id="screen-player" class="screen">
+    <video id="video-element" class="fullscreen-video" autoplay playsinline></video>
+    
+    <!-- Player On-Screen Display (OSD) -->
+    <div id="player-osd" class="player-osd">
+      <div class="osd-top">
+        <div class="osd-channel-num" id="osd-channel-num">01</div>
+        <div class="osd-info">
+          <h2 id="osd-channel-name">اسم القناة</h2>
+          <p id="osd-category-name">الباقة</p>
+        </div>
+        <div class="osd-badges">
+          <span class="badge neon-badge">FHD 1080p</span>
+          <span class="badge">LIVE</span>
+        </div>
+      </div>
+      <div class="osd-bottom">
+        <span>اضغط <strong>عودة (BACK)</strong> للخروج من المشغل</span>
+        <span>اضغط <strong>▲ / ▼</strong> للتنقل بين القنوات</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

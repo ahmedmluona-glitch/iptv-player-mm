@@ -1,0 +1,9 @@
+#!/bin/sh
+echo "=========================================================="
+echo "   MLUONA IPTV Plugin Installed Successfully!"
+echo "   Restarting Enigma2 to load the new plugin..."
+echo "=========================================================="
+if [ -x /usr/bin/init ]; then
+    killall -9 enigma2 2>/dev/null || true
+fi
+exit 0
