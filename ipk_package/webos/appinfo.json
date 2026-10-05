@@ -15,6 +15,7 @@
   "supportGIP": false,
   "supportHiRes": true,
   "useApplicationCache": false,
+  "requiredACG": [],
   "requiredPermissions": [
     "media.audio",
     "media.video",

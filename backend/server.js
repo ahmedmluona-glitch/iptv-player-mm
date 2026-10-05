@@ -7,17 +7,71 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 
 const app = express();
-app.use(cors());
+
+// Security Headers
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+});
+
+// Production Secrets Validation
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const JWT_SECRET = process.env.JWT_SECRET || (NODE_ENV === 'production' ? null : 'mluona_dev_secret_jwt_key_2026');
+const AES_KEY = process.env.AES_SECRET_KEY || (NODE_ENV === 'production' ? null : 'mluona_aes_256_encryption_key_32b');
+const SERVER_SALT = process.env.SERVER_SALT || 'mluona_tv_salt_xyz999';
+
+if (NODE_ENV === 'production') {
+    if (!process.env.JWT_SECRET) {
+        console.error('[FATAL] JWT_SECRET must be set in production via environment variable!');
+        process.exit(1);
+    }
+    if (!process.env.AES_SECRET_KEY) {
+        console.error('[FATAL] AES_SECRET_KEY must be set in production via environment variable!');
+        process.exit(1);
+    }
+}
+
+// Configured CORS Origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+    : ['http://localhost:3000', 'http://localhost:8080', 'http://127.0.0.1'];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || origin === 'null' || origin.startsWith('file://') || NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS blocked by server security policy'));
+        }
+    },
+    credentials: true
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Login Rate Limiter (Max 5 attempts per minute per IP)
+const loginAttemptTracker = new Map();
+function rateLimitLogin(req, res, next) {
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const attempts = (loginAttemptTracker.get(ip) || []).filter(t => now - t < 60000);
+    if (attempts.length >= 7) {
+        return res.status(429).json({ error: 'تم تجاوز عدد محاولات الدخول المسموح بها. يرجى الانتظار دقيقة واحدة.' });
+    }
+    attempts.push(now);
+    loginAttemptTracker.set(ip, attempts);
+    next();
+}
+
 // Configuration
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'mluona_super_secret_jwt_key_2026';
-const AES_KEY = process.env.AES_SECRET_KEY || 'mluona_aes_256_encryption_key_32b'; // 32 bytes key
-const SERVER_SALT = process.env.SERVER_SALT || 'mluona_tv_salt_xyz999';
 
 // AES-256 Helper
 function encryptAES(text) {
@@ -47,8 +101,7 @@ function decryptAES(encryptedText) {
     }
 }
 
-// In-Memory Database store with pre-seeded demo plans and playlists
-// (Ready to swap with PostgreSQL via pg pool if DATABASE_URL is configured)
+// Database store with hashed passwords
 const db = {
     plans: [
         { id: 'trial_7d', name: 'تجربة مجانية 7 أيام', durationDays: 7, priceCents: 0, maxDevices: 2 },
@@ -58,8 +111,8 @@ const db = {
     users: [
         {
             id: 'u-admin-1',
-            email: 'admin@mluona.com',
-            passwordHash: 'admin123',
+            email: process.env.ADMIN_EMAIL || 'admin@mluona.com',
+            passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10),
             role: 'admin',
             trialUsed: true,
             createdAt: new Date()
@@ -67,7 +120,7 @@ const db = {
         {
             id: 'u-demo-1',
             email: 'demo@mluona.com',
-            passwordHash: '123456',
+            passwordHash: bcrypt.hashSync('123456', 10),
             role: 'user',
             trialUsed: true,
             createdAt: new Date()
@@ -325,11 +378,16 @@ app.post('/v1/auth/register', (req, res) => {
 });
 
 // 5. POST /v1/auth/login -> Standard email login
-app.post('/v1/auth/login', (req, res) => {
+app.post('/v1/auth/login', rateLimitLogin, (req, res) => {
     const { email, password, deviceHash, deviceName } = req.body;
     const user = db.users.find(u => u.email.toLowerCase() === (email || '').toLowerCase());
     if (!user) {
-        return res.status(401).json({ error: 'Invalid email or password' });
+        return res.status(401).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
+    }
+
+    const isMatch = user.passwordHash && bcrypt.compareSync(password || '', user.passwordHash);
+    if (!isMatch) {
+        return res.status(401).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     }
 
     const token = jwt.sign(

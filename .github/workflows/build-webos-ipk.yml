@@ -1,0 +1,47 @@
+name: Build LG webOS IPK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+# Cancel previous in-flight runs to save runner minutes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ipk:
+    name: Build LG webOS IPK Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install LG webOS CLI Tools (@webos-tools/cli)
+        run: |
+          npm install -g @webos-tools/cli
+          ares-package --version
+
+      - name: Build webOS IPK Package with ares-package
+        run: |
+          mkdir -p dist
+          ares-package ipk_package/webos -o dist/
+          echo "Package built successfully:"
+          ls -lh dist/
+
+      - name: Upload webOS IPK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mluona-iptv-webos-ipk
+          path: dist/*.ipk
+          if-no-files-found: error
+          retention-days: 14

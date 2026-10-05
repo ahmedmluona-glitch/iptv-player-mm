@@ -1,4 +1,0 @@
-#!/bin/sh
-rm -rf /usr/lib/enigma2/python/Plugins/Extensions/MluonaIPTV/*.pyc 2>/dev/null || true
-rm -rf /usr/lib/enigma2/python/Plugins/Extensions/MluonaIPTV/__pycache__ 2>/dev/null || true
-exit 0

@@ -1,7 +1,9 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.view.KeyEvent
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
@@ -137,6 +139,15 @@ fun TvPlayerScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+
+    // Keep TV screen awake during video playback
+    val activity = context as? Activity
+    androidx.compose.runtime.DisposableEffect(activity) {
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     val currentLiveChannel by (viewModel?.selectedLiveChannel ?: kotlinx.coroutines.flow.MutableStateFlow(null)).collectAsState()
     val epgMap by (viewModel?.epgMap ?: kotlinx.coroutines.flow.MutableStateFlow(emptyMap())).collectAsState()
