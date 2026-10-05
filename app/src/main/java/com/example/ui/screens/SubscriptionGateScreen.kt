@@ -1,9 +1,12 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.view.KeyEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,9 +42,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.subscription.SubscriptionStatus
@@ -272,6 +277,7 @@ fun SubscriptionGateScreen(
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
                 )
 
+                val context = LocalContext.current
                 val renewalUrl = subInfo?.renewalUrl ?: "https://mluona-iptv.com/renew"
                 QrCodeCanvas(
                     content = renewalUrl,
@@ -280,13 +286,39 @@ fun SubscriptionGateScreen(
                     backgroundColor = Color.White
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                TvActionButton(
+                    text = "🌐 فتح صفحة الاشتراك وإضافة Playlist",
+                    icon = Icons.Default.Refresh,
+                    isHighlight = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(renewalUrl)).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = renewalUrl,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     color = TvAccentGold,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(renewalUrl)).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
+                    }
                 )
             }
         }

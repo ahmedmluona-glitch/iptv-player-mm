@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -19,7 +21,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -44,12 +45,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.subscription.DeviceCodeInfo
@@ -67,11 +69,21 @@ import com.example.ui.theme.TvTextSecondary
 import com.example.ui.viewmodel.IptvViewModel
 import kotlinx.coroutines.delay
 
+enum class LoginTab {
+    QR_CODE,
+    MANUAL
+}
+
 @Composable
 fun DeviceCodeLoginScreen(
     viewModel: IptvViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onNavigateToManualXtream: () -> Unit = {},
+    onNavigateToManualM3u: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var selectedTab by remember { mutableStateOf(LoginTab.QR_CODE) }
+
     var deviceInfo by remember { mutableStateOf<DeviceCodeInfo?>(null) }
     var isPolling by remember { mutableStateOf(false) }
     var countdownSeconds by remember { mutableIntStateOf(600) }
@@ -95,7 +107,7 @@ fun DeviceCodeLoginScreen(
             isPolling = true
             statusMessage = "امسح الرمز أو أدخل الكود على الهاتف للاقتران"
         }.onFailure {
-            statusMessage = "تعذر الاتصال، يمكنك بدء التجربة المجانية مباشرة"
+            statusMessage = "تعذر الاتصال، يمكنك استخدام التسجيل اليدوي أو التجربة المجانية"
         }
         delay(200)
         try {
@@ -103,7 +115,7 @@ fun DeviceCodeLoginScreen(
         } catch (_: Exception) {}
     }
 
-    // 16. Poll /v1/device/poll every 3 seconds
+    // Poll /v1/device/poll every 3 seconds
     LaunchedEffect(isPolling, deviceInfo?.code) {
         val code = deviceInfo?.code
         if (isPolling && !code.isNullOrBlank()) {
@@ -121,171 +133,327 @@ fun DeviceCodeLoginScreen(
         }
     }
 
+    val pairUrl = deviceInfo?.verificationUrl ?: "https://mluona-iptv.com/pair"
+    val finalPairUrl = if (!deviceInfo?.code.isNullOrBlank()) "$pairUrl?code=${deviceInfo?.code}" else pairUrl
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(TvBackground)
-            .padding(32.dp)
+            .padding(horizontal = 28.dp, vertical = 18.dp)
             .testTag("device_code_login_screen"),
         contentAlignment = Alignment.Center
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(40.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Left Panel: Code & QR Pairing
-            Column(
+            // ==========================================
+            // TOP BAR: Dual Mode Selector (QR vs Manual)
+            // ==========================================
+            Row(
                 modifier = Modifier
-                    .weight(1.2f)
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(TvSurface)
-                    .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .border(1.dp, TvBorder, RoundedCornerShape(16.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                MluonaLogo()
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "تسجيل الدخول واقتران التلفاز",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TvTextPrimary
-                )
-                Text(
-                    text = "افتح الموقع من هاتفك وامسح الرمز أو أدخل الكود التالي:",
-                    fontSize = 15.sp,
-                    color = TvTextSecondary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                // Option 1: QR Code Mode
+                TabSelectorButton(
+                    text = "اقتران سريع (QR Code)",
+                    icon = Icons.Default.QrCode,
+                    isSelected = selectedTab == LoginTab.QR_CODE,
+                    onClick = { selectedTab = LoginTab.QR_CODE }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 6-Character Code Display
-                val codeText = deviceInfo?.code ?: "------"
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    codeText.forEach { ch ->
-                        Box(
-                            modifier = Modifier
-                                .size(54.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF071F15))
-                                .border(2.dp, TvAccentEmerald, RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = ch.toString(),
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Black,
-                                color = TvAccentEmerald
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Verification URL
-                Text(
-                    text = deviceInfo?.verificationUrl ?: "https://mluona-iptv.com/pair",
-                    fontSize = 13.sp,
-                    color = TvAccentGold,
-                    fontWeight = FontWeight.SemiBold
+                // Option 2: Manual Mode
+                TabSelectorButton(
+                    text = "تسجيل يدوي (Xtream / M3U)",
+                    icon = Icons.Default.Tv,
+                    isSelected = selectedTab == LoginTab.MANUAL,
+                    onClick = { selectedTab = LoginTab.MANUAL }
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = TvAccentEmerald,
-                        strokeWidth = 2.dp
-                    )
-                    Text(
-                        text = "بانتظار التأكيد على الهاتف... (${countdownSeconds / 60}:${"%02d".format(countdownSeconds % 60)})",
-                        fontSize = 13.sp,
-                        color = TvTextMuted
-                    )
-                }
-
-                if (statusMessage != null) {
-                    Text(
-                        text = statusMessage!!,
-                        fontSize = 12.sp,
-                        color = TvAccentEmerald,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
             }
 
-            // Right Panel: QR Code & Alternative Login (Trial / Email)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(TvSurface)
-                    .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // QR Code
-                val qrData = deviceInfo?.qrPayload ?: "https://mluona-iptv.com/pair?code=${deviceInfo?.code ?: "MLTV"}"
-                QrCodeCanvas(
-                    content = qrData,
-                    sizeDp = 160.dp,
-                    qrColor = Color(0xFF05170F),
-                    backgroundColor = Color.White
-                )
+            // ==========================================
+            // MAIN CONTENT PANELS (Based on selected mode)
+            // ==========================================
+            if (selectedTab == LoginTab.QR_CODE) {
+                // ==========================
+                // MODE 1: QR CODE PAIRING
+                // ==========================
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(28.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Left Panel: Code & Instructions
+                    Column(
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(TvSurface)
+                            .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        MluonaLogo(size = 80.dp)
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            text = "تسجيل الدخول واقتران التلفاز",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TvTextPrimary
+                        )
+                        Text(
+                            text = "امسح رمز QR بكاميرا الهاتف أو أدخل الكود على الموقع:",
+                            fontSize = 14.sp,
+                            color = TvTextSecondary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
 
-                // 15. Instant 7-Day Free Trial Button
-                TvActionButton(
-                    text = "بدء التجربة المجانية 7 أيام فخمة",
-                    icon = Icons.Default.Tv,
-                    isHighlight = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(primaryFocusRequester),
-                    onClick = {
-                        statusMessage = "جارٍ تفعيل التجربة المجانية 7 أيام..."
-                        viewModel.startTrial(
-                            email = "trial-${System.currentTimeMillis() % 10000}@mluona.com",
-                            onSuccess = {
-                                onLoginSuccess()
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // 6-Character Code Display
+                        val codeText = deviceInfo?.code ?: "------"
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            codeText.forEach { ch ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFF071F15))
+                                        .border(2.dp, TvAccentEmerald, RoundedCornerShape(12.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = ch.toString(),
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = TvAccentEmerald
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                color = TvAccentEmerald,
+                                strokeWidth = 2.dp
+                            )
+                            Text(
+                                text = "بانتظار التأكيد على الهاتف... (${countdownSeconds / 60}:${"%02d".format(countdownSeconds % 60)})",
+                                fontSize = 12.sp,
+                                color = TvTextMuted
+                            )
+                        }
+
+                        if (statusMessage != null) {
+                            Text(
+                                text = statusMessage!!,
+                                fontSize = 12.sp,
+                                color = TvAccentEmerald,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Quick switch to Manual option
+                        TvActionButton(
+                            text = "التبديل إلى الإدخال اليدوي (Manual)",
+                            icon = Icons.Default.Tv,
+                            isHighlight = false,
+                            modifier = Modifier.fillMaxWidth(0.9f),
+                            onClick = { selectedTab = LoginTab.MANUAL }
+                        )
+                    }
+
+                    // Right Panel: Real QR Code + Clickable Direct Link
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(TvSurface)
+                            .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        // High-definition scan-compliant QR Code
+                        val qrData = deviceInfo?.qrPayload ?: finalPairUrl
+                        QrCodeCanvas(
+                            content = qrData,
+                            sizeDp = 150.dp,
+                            qrColor = Color(0xFF000000),
+                            backgroundColor = Color.White
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Clickable link directly under QR Code to open subscription & add playlist page
+                        TvActionButton(
+                            text = "🌐 فتح صفحة الاشتراك وإضافة Playlist",
+                            icon = Icons.Default.Refresh,
+                            isHighlight = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(primaryFocusRequester),
+                            onClick = {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(finalPairUrl)).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {}
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Clickable Text Link
+                        Text(
+                            text = finalPairUrl,
+                            fontSize = 11.sp,
+                            color = TvAccentGold,
+                            fontWeight = FontWeight.SemiBold,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier.clickable {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(finalPairUrl)).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {}
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // 7-Day Free Trial Button
+                        TvActionButton(
+                            text = "بدء التجربة المجانية 7 أيام",
+                            icon = Icons.Default.Tv,
+                            isHighlight = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                statusMessage = "جارٍ تفعيل التجربة المجانية 7 أيام..."
+                                viewModel.startTrial(
+                                    email = "trial-${System.currentTimeMillis() % 10000}@mluona.com",
+                                    onSuccess = {
+                                        onLoginSuccess()
+                                    }
+                                )
                             }
                         )
                     }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Email Login Toggle
-                TvActionButton(
-                    text = if (showEmailLogin) "إخفاء الدخول بالبريد" else "الدخول بالبريد الإلكتروني",
-                    icon = Icons.Default.Email,
-                    isHighlight = false,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { showEmailLogin = !showEmailLogin }
-                )
-
-                AnimatedVisibility(visible = showEmailLogin) {
+                }
+            } else {
+                // ==========================
+                // MODE 2: MANUAL LOGIN
+                // ==========================
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(28.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Left Panel: Manual Xtream & M3U Options
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .weight(1.1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(TvSurface)
+                            .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
+                            .padding(28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
+                        MluonaLogo(size = 80.dp)
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = "التسجيل والإدخال اليدوي",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TvTextPrimary
+                        )
+                        Text(
+                            text = "اختر طريقة إدخال بيانات اشتراكك أو ملف القنوات يدوياً:",
+                            fontSize = 14.sp,
+                            color = TvTextSecondary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 1. Xtream Codes Manual Login
+                        TvActionButton(
+                            text = "تسجيل الدخول عبر سيرفر Xtream Codes",
+                            icon = Icons.Default.Tv,
+                            isHighlight = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { onNavigateToManualXtream() }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // 2. M3U Playlist Manual Login
+                        TvActionButton(
+                            text = "إضافة رابط قائمة تشغيل M3U Playlist",
+                            icon = Icons.Default.Refresh,
+                            isHighlight = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { onNavigateToManualM3u() }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Switch back to QR Code
+                        TvActionButton(
+                            text = "العودة إلى اقتران رمز QR كود",
+                            icon = Icons.Default.QrCode,
+                            isHighlight = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { selectedTab = LoginTab.QR_CODE }
+                        )
+                    }
+
+                    // Right Panel: Email Login & Quick Trial
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(TvSurface)
+                            .border(1.dp, TvBorder, RoundedCornerShape(24.dp))
+                            .padding(28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "الدخول بالبريد الإلكتروني",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TvTextPrimary
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
                         OutlinedTextField(
                             value = emailInput,
                             onValueChange = { emailInput = it },
@@ -299,6 +467,8 @@ fun DeviceCodeLoginScreen(
                                 unfocusedTextColor = TvTextPrimary
                             )
                         )
+
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedTextField(
                             value = passwordInput,
@@ -314,9 +484,11 @@ fun DeviceCodeLoginScreen(
                             )
                         )
 
+                        Spacer(modifier = Modifier.height(14.dp))
+
                         TvActionButton(
-                            text = if (isSubmittingEmail) "جارٍ التحقق..." else "دخول فوري",
-                            icon = Icons.Default.Lock,
+                            text = if (isSubmittingEmail) "جارٍ التحقق..." else "دخول فوري بالبريد",
+                            icon = Icons.Default.Email,
                             isHighlight = true,
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
@@ -337,9 +509,93 @@ fun DeviceCodeLoginScreen(
                                 }
                             }
                         )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Instant 7-Day Free Trial
+                        TvActionButton(
+                            text = "بدء التجربة المجانية 7 أيام",
+                            icon = Icons.Default.Tv,
+                            isHighlight = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                statusMessage = "جارٍ تفعيل التجربة المجانية 7 أيام..."
+                                viewModel.startTrial(
+                                    email = "trial-${System.currentTimeMillis() % 10000}@mluona.com",
+                                    onSuccess = {
+                                        onLoginSuccess()
+                                    }
+                                )
+                            }
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TabSelectorButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
+    val bg = when {
+        isFocused -> TvAccentEmerald
+        isSelected -> Color(0xFF0F3D26)
+        else -> Color.Transparent
+    }
+
+    val contentColor = when {
+        isFocused -> Color.Black
+        isSelected -> TvAccentEmerald
+        else -> TvTextSecondary
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(bg)
+            .border(
+                width = if (isFocused) 2.dp else if (isSelected) 1.2.dp else 0.dp,
+                color = if (isFocused) Color.White else if (isSelected) TvAccentEmerald else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .focusable(interactionSource = interactionSource)
+            .clickable { onClick() }
+            .onKeyEvent {
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN &&
+                    (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+                     it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_ENTER)
+                ) {
+                    onClick()
+                    true
+                } else false
+            }
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = contentColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = text,
+                color = contentColor,
+                fontWeight = if (isSelected || isFocused) FontWeight.Bold else FontWeight.Medium,
+                fontSize = 14.sp
+            )
         }
     }
 }
@@ -396,7 +652,7 @@ fun TvActionButton(
                     true
                 } else false
             }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -413,7 +669,7 @@ fun TvActionButton(
                 text = text,
                 color = contentColor,
                 fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
+                fontSize = 14.sp
             )
         }
     }

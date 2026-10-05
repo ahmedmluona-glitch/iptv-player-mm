@@ -119,6 +119,12 @@ fun MluonaTvApp(
             } else {
               currentScreen = TvScreen.SUBSCRIPTION_GATE
             }
+          },
+          onNavigateToManualXtream = {
+            currentScreen = TvScreen.XTREAM_LOGIN
+          },
+          onNavigateToManualM3u = {
+            currentScreen = TvScreen.M3U_LOAD
           }
         )
       }
@@ -160,7 +166,7 @@ fun MluonaTvApp(
             currentScreen = TvScreen.DASHBOARD
           },
           onBack = {
-            currentScreen = TvScreen.PORTAL
+            currentScreen = if (viewModel.activeAccount.value != null) TvScreen.PORTAL else TvScreen.DEVICE_CODE_LOGIN
           }
         )
       }
@@ -171,7 +177,7 @@ fun MluonaTvApp(
             currentScreen = TvScreen.DASHBOARD
           },
           onBack = {
-            currentScreen = TvScreen.PORTAL
+            currentScreen = if (viewModel.activeAccount.value != null) TvScreen.PORTAL else TvScreen.DEVICE_CODE_LOGIN
           }
         )
       }

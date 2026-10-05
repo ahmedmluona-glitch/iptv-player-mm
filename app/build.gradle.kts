@@ -123,6 +123,7 @@ dependencies {
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.androidx.media3.ui)
   implementation(libs.androidx.media3.hls)
+  implementation(libs.zxing.core)
   implementation(libs.coil.compose)
   // implementation(libs.converter.moshi)
   // implementation(libs.firebase.ai)
