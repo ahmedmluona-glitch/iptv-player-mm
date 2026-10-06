@@ -54,7 +54,7 @@
 
       <div class="portal-two-options">
         <!-- Option 1: Xtream Codes API -->
-        <button class="portal-option-card focusable" data-action="open-xtream-modal">
+        <button id="portal-opt-xtream" class="portal-option-card focusable" data-action="open-xtream-modal">
           <div class="option-icon-circle">
             <svg class="svg-icon-large" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
           </div>
@@ -64,7 +64,7 @@
         </button>
 
         <!-- Option 2: M3U Playlist -->
-        <button class="portal-option-card focusable" data-action="open-m3u-modal">
+        <button id="portal-opt-m3u" class="portal-option-card focusable" data-action="open-m3u-modal">
           <div class="option-icon-circle">
             <svg class="svg-icon-large" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
           </div>
@@ -80,6 +80,7 @@
 
   <!-- =========================================================================
        SCREEN 3: DASHBOARD (Exact 3-Column Replica of TvDashboardScreen.kt)
+       Deterministic Spatial Navigation Map Configured
        ========================================================================= -->
   <div id="screen-dashboard" class="screen">
     <!-- Top Header Bar -->
@@ -106,17 +107,21 @@
 
       <!-- Right: 4 Action Buttons (+ Add | ? | Settings | Profile) -->
       <div class="dash-header-right">
-        <button class="top-pill-add-btn focusable" data-action="open-portal">
+        <button id="dash-btn-add" class="top-pill-add-btn focusable" data-action="open-portal"
+                data-nav-down="#dash-card-live" data-nav-left="#dash-btn-help">
           <svg class="svg-icon-small" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span>Add</span>
         </button>
-        <button class="top-square-btn focusable" data-action="open-help-modal" title="Help">
+        <button id="dash-btn-help" class="top-square-btn focusable" data-action="open-help-modal" title="Help"
+                data-nav-right="#dash-btn-add" data-nav-left="#dash-btn-settings" data-nav-down="#dash-card-films">
           <span class="help-question-mark">?</span>
         </button>
-        <button class="top-square-btn focusable" data-action="open-settings" title="Settings">
+        <button id="dash-btn-settings" class="top-square-btn focusable" data-action="open-settings" title="Settings"
+                data-nav-right="#dash-btn-help" data-nav-left="#dash-btn-profile" data-nav-down="#dash-card-series">
           <svg class="svg-icon-small" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
-        <button class="top-solid-profile-btn focusable" data-action="open-accounts-modal" title="Account">
+        <button id="dash-btn-profile" class="top-solid-profile-btn focusable" data-action="open-accounts-modal" title="Account"
+                data-nav-right="#dash-btn-settings" data-nav-down="#dash-card-series">
           <svg class="svg-icon-small-dark" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span id="dash-profile-name">Default</span>
         </button>
@@ -125,9 +130,10 @@
 
     <!-- Center: The Famous 3-Column Grid -->
     <main class="dash-center-grid">
-      <!-- Column 1: Tall "Live TV" Card -->
+      <!-- Column 1: Tall "Live TV" Card (RTL: on Right) -->
       <div class="dash-col col-1">
-        <button class="dash-card card-tall-live focusable active" data-action="open-livetv">
+        <button id="dash-card-live" class="dash-card card-tall-live focusable active" data-action="open-livetv"
+                data-nav-up="#dash-btn-add" data-nav-left="#dash-card-films">
           <div class="card-inner-glow"></div>
           <div class="card-badge-circle">
             <svg class="svg-card-hero" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
@@ -140,10 +146,11 @@
         </button>
       </div>
 
-      <!-- Column 2: Top "Films" + Bottom "Favorites" -->
+      <!-- Column 2: Top "Films" + Bottom "Favorites" (RTL: in Middle) -->
       <div class="dash-col col-2">
         <!-- Top: Films Card -->
-        <button class="dash-card card-half focusable" data-action="open-movies">
+        <button id="dash-card-films" class="dash-card card-half focusable" data-action="open-movies"
+                data-nav-up="#dash-btn-help" data-nav-right="#dash-card-live" data-nav-left="#dash-card-series" data-nav-down="#dash-card-fav">
           <div class="card-badge-circle">
             <svg class="svg-card-hero" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
           </div>
@@ -155,7 +162,8 @@
         </button>
 
         <!-- Bottom: Favorites Card -->
-        <button class="dash-card card-half focusable" data-action="open-favorites">
+        <button id="dash-card-fav" class="dash-card card-half focusable" data-action="open-favorites"
+                data-nav-up="#dash-card-films" data-nav-right="#dash-card-live" data-nav-left="#dash-card-add-sub">
           <div class="card-badge-circle">
             <svg class="svg-card-hero" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           </div>
@@ -167,10 +175,11 @@
         </button>
       </div>
 
-      <!-- Column 3: Top "Series" + Bottom "+ Add" -->
+      <!-- Column 3: Top "Series" + Bottom "+ Add" (RTL: on Left) -->
       <div class="dash-col col-3">
         <!-- Top: Series Card -->
-        <button class="dash-card card-half focusable" data-action="open-series">
+        <button id="dash-card-series" class="dash-card card-half focusable" data-action="open-series"
+                data-nav-up="#dash-btn-settings" data-nav-right="#dash-card-films" data-nav-down="#dash-card-add-sub">
           <div class="card-badge-circle">
             <svg class="svg-card-hero" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
           </div>
@@ -182,7 +191,8 @@
         </button>
 
         <!-- Bottom: + Add Action Card -->
-        <button class="dash-card card-half card-action-add focusable" data-action="open-portal">
+        <button id="dash-card-add-sub" class="dash-card card-half card-action-add focusable" data-action="open-portal"
+                data-nav-up="#dash-card-series" data-nav-right="#dash-card-fav">
           <div class="card-badge-circle">
             <svg class="svg-card-hero" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </div>
@@ -222,18 +232,20 @@
     <!-- Categories Column -->
     <aside class="live-categories-col">
       <div class="col-head-bar">
-        <button class="nav-back-circle focusable" data-action="live-go-back">
+        <button id="live-btn-back" class="nav-back-circle focusable" data-action="live-go-back"
+                data-nav-down="#wrap-search-cat" data-nav-left="#wrap-search-ch">
           <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <h3>التصنيفات والباقات</h3>
       </div>
       
-      <!-- Controlled Search Box: readonly until OK is pressed -->
+      <!-- Controlled Search Box: Button wrapper with native focus -->
       <div class="col-search-box">
-        <div class="tv-search-wrapper focusable" data-action="activate-search-cat">
+        <button type="button" id="wrap-search-cat" class="tv-search-wrapper focusable" data-action="activate-search-cat"
+                data-nav-up="#live-btn-back" data-nav-left="#wrap-search-ch">
           <svg class="svg-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" id="live-category-search" class="tv-clean-input" placeholder="بحث في الباقات (اضغط OK)" readonly>
-        </div>
+          <input type="text" id="live-category-search" class="tv-clean-input" placeholder="بحث في الباقات (اضغط OK)" readonly tabindex="-1">
+        </button>
       </div>
       <div id="live-categories-list" class="scroll-v-list"></div>
     </aside>
@@ -248,10 +260,11 @@
 
         <!-- Controlled Search Box for Channels -->
         <div class="col-search-box wide">
-          <div class="tv-search-wrapper focusable" data-action="activate-search-ch">
+          <button type="button" id="wrap-search-ch" class="tv-search-wrapper focusable" data-action="activate-search-ch"
+                  data-nav-right="#wrap-search-cat">
             <svg class="svg-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="live-channel-search" class="tv-clean-input" placeholder="بحث عن قناة بالاسم أو الرقم (اضغط OK)" readonly>
-          </div>
+            <input type="text" id="live-channel-search" class="tv-clean-input" placeholder="بحث عن قناة بالاسم أو الرقم (اضغط OK)" readonly tabindex="-1">
+          </button>
         </div>
       </div>
       <div id="live-channels-grid" class="channels-linear-list"></div>
@@ -264,20 +277,57 @@
   <div id="screen-vod" class="screen">
     <aside class="live-categories-col">
       <div class="col-head-bar">
-        <button class="nav-back-circle focusable" data-action="vod-go-back">
+        <button id="vod-btn-back" class="nav-back-circle focusable" data-action="vod-go-back"
+                data-nav-down="#wrap-search-vod" data-nav-left="#vod-items-grid">
           <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <h3 id="vod-sidebar-title">تصنيفات الأفلام</h3>
+      </div>
+      <div class="col-search-box">
+        <button type="button" id="wrap-search-vod" class="tv-search-wrapper focusable" data-action="activate-search-vod"
+                data-nav-up="#vod-btn-back" data-nav-left="#vod-items-grid">
+          <svg class="svg-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="vod-content-search" class="tv-clean-input" placeholder="بحث في المحتوى (اضغط OK)" readonly tabindex="-1">
+        </button>
       </div>
       <div id="vod-categories-list" class="scroll-v-list"></div>
     </aside>
     <main class="live-channels-col">
       <div class="col-head-bar space-between">
-        <h2 id="vod-current-category-name">قائمة المحتوى</h2>
-        <span id="vod-count-badge" class="head-pill">0 عنصر</span>
+        <div class="title-with-badge">
+          <h2 id="vod-current-category-name">جميع الأفلام</h2>
+          <span id="vod-count-badge" class="head-pill">0 عنصر</span>
+        </div>
       </div>
       <div id="vod-items-grid" class="vod-posters-grid"></div>
     </main>
+  </div>
+
+  <!-- =========================================================================
+       SCREEN 5B: SERIES DETAIL (Seasons & Episodes Viewer)
+       ========================================================================= -->
+  <div id="screen-series-detail" class="screen">
+    <div class="fullscreen-view-container">
+      <div class="col-head-bar space-between">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button id="series-btn-back" class="nav-back-circle focusable" data-action="series-detail-back">
+            <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <h2 id="series-detail-title">اسم المسلسل</h2>
+        </div>
+        <span id="series-detail-badge" class="head-pill">0 مواسم</span>
+      </div>
+      <div style="display: flex; gap: 32px; flex: 1; overflow: hidden; margin-top: 14px;">
+        <div style="width: 280px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+          <img id="series-detail-poster" src="icon.png" class="vod-thumb" style="width: 250px; height: 360px; border-radius: 18px; object-fit: cover;" alt="Series Poster">
+          <div id="series-detail-plot" style="font-size: 17px; color: var(--color-text-muted); line-height: 1.5; text-align: center; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; overflow: hidden;">
+          <div id="series-seasons-row" class="settings-pills-row" style="overflow-x: auto; flex-shrink: 0;"></div>
+          <div id="series-episodes-grid" class="vod-posters-grid" style="grid-template-columns: repeat(4, 1fr); grid-auto-rows: 140px;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- =========================================================================
@@ -393,7 +443,7 @@
     <div id="player-full-osd" class="full-player-osd hidden">
       <!-- Top Bar: Back & Title -->
       <div class="osd-top-header">
-        <button class="nav-back-circle focusable" data-action="player-exit">
+        <button id="osd-btn-back" class="nav-back-circle focusable" data-action="player-exit" data-nav-down="#btn-play-pause">
           <svg class="svg-icon-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <div class="osd-playing-title-box">
@@ -401,7 +451,7 @@
           <span id="osd-category-sub" class="osd-sub">باقة القنوات</span>
         </div>
         <div class="osd-top-badges">
-          <span class="osd-pill neon">LIVE</span>
+          <span class="osd-pill neon" id="osd-type-pill">LIVE</span>
           <span class="osd-pill" id="osd-engine-lbl">HLS.JS</span>
           <span class="osd-clock" id="osd-live-clock">00:00:00</span>
         </div>
@@ -417,14 +467,14 @@
           <span id="osd-time-dur">00:00</span>
         </div>
         <div class="osd-action-buttons">
-          <button class="osd-circle-btn focusable" data-action="player-rw10">
+          <button id="btn-player-rw10" class="osd-circle-btn focusable" data-action="player-rw10" data-nav-left="#btn-play-pause" data-nav-up="#osd-btn-back">
             <svg class="svg-icon-small" viewBox="0 0 24 24"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
             <span>-10s</span>
           </button>
-          <button class="osd-circle-btn focusable active" data-action="player-toggle-play" id="btn-play-pause">
+          <button id="btn-play-pause" class="osd-circle-btn focusable active" data-action="player-toggle-play" data-nav-right="#btn-player-rw10" data-nav-left="#btn-player-ff10" data-nav-up="#osd-btn-back">
             <svg class="svg-icon-small" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
           </button>
-          <button class="osd-circle-btn focusable" data-action="player-ff10">
+          <button id="btn-player-ff10" class="osd-circle-btn focusable" data-action="player-ff10" data-nav-right="#btn-play-pause" data-nav-up="#osd-btn-back">
             <svg class="svg-icon-small" viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
             <span>+10s</span>
           </button>
@@ -446,85 +496,110 @@
 
   <!-- =========================================================================
        MODALS: Xtream Login, M3U Load, Help, Accounts
+       Equipped with data-modal="true" and tabindex="0" for Focus Trapping
        ========================================================================= -->
   <!-- Modal: Xtream Login -->
-  <div id="modal-xtream-login" class="modal-backdrop hidden">
+  <div id="modal-xtream-login" class="modal-backdrop hidden" data-modal="true">
     <div class="modal-window">
       <div class="modal-header">
         <h3>إضافة حساب Xtream Codes</h3>
-        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
+        <button id="xtream-modal-close" class="modal-close-btn focusable" data-action="close-modals"
+                data-nav-down="#wrap-xtream-name">✕</button>
       </div>
       <div class="modal-body-form">
         <div class="form-row">
           <label>اسم الحساب</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-name">
-            <input type="text" id="xtream-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly>
-          </div>
+          <button type="button" id="wrap-xtream-name" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-name"
+                  data-nav-up="#xtream-modal-close" data-nav-down="#wrap-xtream-host">
+            <input type="text" id="xtream-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly tabindex="-1">
+          </button>
         </div>
         <div class="form-row">
           <label>رابط السيرفر (Server Host URL)</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-host">
-            <input type="text" id="xtream-inp-host" class="modal-input ltr-txt" placeholder="http://server.com:8080 (اضغط OK)" readonly>
-          </div>
+          <button type="button" id="wrap-xtream-host" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-host"
+                  data-nav-up="#wrap-xtream-name" data-nav-down="#wrap-xtream-user">
+            <input type="text" id="xtream-inp-host" class="modal-input ltr-txt" placeholder="http://server.com:8080 (اضغط OK)" readonly tabindex="-1">
+          </button>
         </div>
         <div class="form-row">
           <label>اسم المستخدم (Username)</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-user">
-            <input type="text" id="xtream-inp-user" class="modal-input ltr-txt" placeholder="Username (اضغط OK)" readonly>
-          </div>
+          <button type="button" id="wrap-xtream-user" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-user"
+                  data-nav-up="#wrap-xtream-host" data-nav-down="#wrap-xtream-pass">
+            <input type="text" id="xtream-inp-user" class="modal-input ltr-txt" placeholder="Username (اضغط OK)" readonly tabindex="-1">
+          </button>
         </div>
         <div class="form-row">
           <label>كلمة المرور (Password)</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-pass">
-            <input type="password" id="xtream-inp-pass" class="modal-input ltr-txt" placeholder="Password (اضغط OK)" readonly>
-          </div>
+          <button type="button" id="wrap-xtream-pass" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="xtream-inp-pass"
+                  data-nav-up="#wrap-xtream-user" data-nav-down="#xtream-btn-submit">
+            <input type="password" id="xtream-inp-pass" class="modal-input ltr-txt" placeholder="Password (اضغط OK)" readonly tabindex="-1">
+          </button>
         </div>
-        <button class="btn-submit-action focusable" data-action="do-xtream-login">دخول وتشغيل القنوات</button>
+        <button id="xtream-btn-submit" class="btn-submit-action focusable" data-action="do-xtream-login"
+                data-nav-up="#wrap-xtream-pass">دخول وتشغيل القنوات</button>
         <div id="xtream-modal-status" class="status-notice"></div>
       </div>
     </div>
   </div>
 
   <!-- Modal: M3U Load -->
-  <div id="modal-m3u-load" class="modal-backdrop hidden">
+  <div id="modal-m3u-load" class="modal-backdrop hidden" data-modal="true">
     <div class="modal-window">
       <div class="modal-header">
         <h3>تحميل قائمة M3U Playlist</h3>
-        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
+        <button id="m3u-modal-close" class="modal-close-btn focusable" data-action="close-modals"
+                data-nav-down="#wrap-m3u-name">✕</button>
       </div>
       <div class="modal-body-form">
         <div class="form-row">
           <label>اسم القائمة</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-name">
-            <input type="text" id="m3u-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly>
-          </div>
+          <button type="button" id="wrap-m3u-name" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-name"
+                  data-nav-up="#m3u-modal-close" data-nav-down="#wrap-m3u-url">
+            <input type="text" id="m3u-inp-name" class="modal-input" placeholder="اضغط OK لكتابة الاسم" readonly tabindex="-1">
+          </button>
         </div>
         <div class="form-row">
           <label>رابط قائمة M3U (M3U / M3U8 URL)</label>
-          <div class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-url">
-            <input type="text" id="m3u-inp-url" class="modal-input ltr-txt" placeholder="http://example.com/playlist.m3u (اضغط OK)" readonly>
-          </div>
+          <button type="button" id="wrap-m3u-url" class="modal-inp-wrapper focusable" data-action="focus-input" data-target="m3u-inp-url"
+                  data-nav-up="#wrap-m3u-name" data-nav-down="#m3u-btn-submit">
+            <input type="text" id="m3u-inp-url" class="modal-input ltr-txt" placeholder="http://example.com/playlist.m3u (اضغط OK)" readonly tabindex="-1">
+          </button>
         </div>
-        <button class="btn-submit-action focusable" data-action="do-m3u-login">تحميل القائمة</button>
+        <button id="m3u-btn-submit" class="btn-submit-action focusable" data-action="do-m3u-login"
+                data-nav-up="#wrap-m3u-url">تحميل القائمة</button>
         <div id="m3u-modal-status" class="status-notice"></div>
       </div>
     </div>
   </div>
 
   <!-- Modal: Help (?) -->
-  <div id="modal-help" class="modal-backdrop hidden">
+  <div id="modal-help" class="modal-backdrop hidden" data-modal="true">
     <div class="modal-window">
       <div class="modal-header">
         <h3>مساعدة واختصارات الريموت</h3>
-        <button class="modal-close-btn focusable" data-action="close-modals">✕</button>
+        <button id="help-modal-close" class="modal-close-btn focusable" data-action="close-modals">✕</button>
       </div>
       <div class="modal-help-content">
         <div class="help-row"><span class="key-badge">▲ / ▼ / ◀ / ▶</span><span>التنقل في القوائم والبطاقات</span></div>
         <div class="help-row"><span class="key-badge">OK / ENTER</span><span>فتح وتشغيل أو إظهار معلومات القناة</span></div>
-        <div class="help-row"><span class="key-badge">BACK</span><span>الرجوع للشاشة السابقة أو الخروج</span></div>
+        <div class="help-row"><span class="key-badge">BACK</span><span>الرجوع للشاشة السابقة أو إغلاق النافذة</span></div>
         <div class="help-row"><span class="key-badge">CH+ / CH-</span><span>التبديل الفوري بين القنوات</span></div>
         <div class="help-row"><span class="key-badge">0 - 9</span><span>كتابة رقم القناة للانتقال المباشر</span></div>
         <div class="help-row"><span class="key-badge yellow">الزر الأصفر</span><span>إضافة أو إزالة القناة من المفضلة</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Accounts Switcher -->
+  <div id="modal-accounts" class="modal-backdrop hidden" data-modal="true">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>الحسابات والاشتراكات المحفوظة</h3>
+        <button id="accounts-modal-close" class="modal-close-btn focusable" data-action="close-modals">✕</button>
+      </div>
+      <div class="modal-body-form">
+        <div id="accounts-list-container" class="scroll-v-list" style="max-height: 380px;"></div>
+        <button class="btn-submit-action focusable" data-action="open-portal" style="margin-top: 14px;">إضافة حساب جديد (+)</button>
       </div>
     </div>
   </div>

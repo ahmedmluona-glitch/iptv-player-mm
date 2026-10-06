@@ -214,6 +214,20 @@ body {
   align-items: center;
   padding: 0 16px;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-align: inherit;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.tv-search-wrapper:focus,
+.modal-inp-wrapper:focus {
+  border-color: var(--color-neon-green) !important;
+  box-shadow: 0 0 20px var(--color-neon-glow) !important;
+  background: #081C12 !important;
+  outline: none;
 }
 
 .tv-search-wrapper.typing {
@@ -233,6 +247,18 @@ body {
   cursor: pointer;
 }
 
+.tv-clean-input[readonly],
+.modal-input[readonly] {
+  pointer-events: none;
+  user-select: none;
+}
+
+.tv-search-wrapper.typing .tv-clean-input,
+.modal-inp-wrapper.typing .modal-input {
+  pointer-events: auto;
+  user-select: text;
+}
+
 .modal-inp-wrapper {
   width: 100%;
   height: 56px;
@@ -242,6 +268,13 @@ body {
   display: flex;
   align-items: center;
   padding: 0 18px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-align: inherit;
+  color: inherit;
+  box-sizing: border-box;
 }
 
 .modal-inp-wrapper.typing {
@@ -1244,12 +1277,19 @@ body {
 }
 
 .modal-window {
-  width: 680px;
+  width: 720px;
+  max-height: 940px;
   background: var(--color-surface-dark);
   border: 2px solid var(--color-neon-green);
   border-radius: 28px;
-  padding: 36px 44px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.95);
+  padding: 36px 44px 44px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+  overflow-y: auto;
+}
+
+.modal-backdrop.keyboard-active .modal-window {
+  transform: translateY(-170px);
 }
 
 .modal-header {
@@ -1270,6 +1310,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding-bottom: 24px;
 }
 
 .form-row {
@@ -1335,6 +1376,71 @@ body {
 .key-badge.yellow {
   background: rgba(255, 213, 79, 0.2);
   color: var(--color-gold);
+}
+
+.account-item-card {
+  width: 100%;
+  padding: 16px 20px;
+  background: #081710;
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-bottom: 12px;
+  font-family: inherit;
+  color: #FFFFFF;
+}
+
+.account-item-card.active {
+  border-color: var(--color-neon-green);
+  background: rgba(0, 230, 118, 0.15);
+}
+
+.acc-info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.acc-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.acc-subtitle {
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+.acc-actions-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acc-btn-del {
+  padding: 8px 16px;
+  background: rgba(255, 82, 82, 0.15);
+  border: 1.5px solid var(--color-danger);
+  border-radius: 8px;
+  color: var(--color-danger);
+  font-size: 16px;
+  font-weight: 800;
+  font-family: inherit;
+}
+
+.acc-badge {
+  background: rgba(0, 230, 118, 0.2);
+  color: var(--color-neon-green);
+  border: 1px solid var(--color-neon-green);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .empty-state-notice {
